@@ -14,8 +14,12 @@ extern "C" {
 extern void ui_Screen1_screen_init(void);
 extern void ui_Screen1_screen_destroy(void);
 extern lv_obj_t * ui_Screen1;
-extern lv_obj_t * ui_Slider1;
-extern lv_obj_t * ui_Arc1;
+extern lv_obj_t * ui_Spinner1;
+extern lv_obj_t * ui_Switch1;
+extern lv_obj_t * ui_Chart1;
+extern lv_obj_t * ui_Chart1_Xaxis;
+extern lv_obj_t * ui_Chart1_Yaxis1;
+extern lv_obj_t * ui_Chart1_Yaxis2;
 // CUSTOM VARIABLES
 
 #ifdef __cplusplus

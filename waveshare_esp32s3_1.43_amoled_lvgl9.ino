@@ -7,7 +7,8 @@
 #include "ui.h"
 #include "amoled.h"
 #include "FT3168.h" // Capacitive Touch functions
-#define DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT / 10 * (LV_COLOR_DEPTH / 8))
+// #define DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT / 10 * (LV_COLOR_DEPTH / 8))
+#define DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t))
 
 Amoled amoled; // Main object for the display
 lv_display_t *disp;
@@ -18,6 +19,7 @@ void setup()
 {
     Serial.begin(115200);
     delay(4000); // Give time to the serial port to show initial messages printed on the serial port upon reset
+    Touch_Init();
 
     // Display initialization
     if (!amoled.begin())
@@ -32,7 +34,7 @@ void setup()
     lv_init();
     lv_tick_set_cb(millis_cb);
 
-    buf1 = (lv_color_t *)heap_caps_malloc(DRAW_BUF_SIZE, MALLOC_CAP_DMA);
+    buf1 = (lv_color_t *)heap_caps_malloc(DRAW_BUF_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     if (!buf1)
     {
         Serial.println("LVGL buffer 1 allocate failed!");
@@ -41,7 +43,7 @@ void setup()
         }
     }
 
-    buf2 = (lv_color_t *)heap_caps_malloc(DRAW_BUF_SIZE, MALLOC_CAP_DMA);
+    buf2 = (lv_color_t *)heap_caps_malloc(DRAW_BUF_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     if (!buf2)
     {
         Serial.println("LVGL buffer 2 allocate failed!");
@@ -83,7 +85,8 @@ uint32_t millis_cb(void)
 // LVGL calls this function when a rendered image needs to copied to the display
 void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
 {
-    amoled.drawArea(area->x1, area->y1, area->x2, area->y2,(uint16_t*) px_map);
+    // Serial.printf("x1=%d, y1=%d, x2=%d, y2=%d\n",area->x1, area->y1, area->x2, area->y2);
+    amoled.drawArea(area->x1, area->y1, area->x2, area->y2, (uint16_t *)px_map);
 
     lv_disp_flush_ready(disp);
 }

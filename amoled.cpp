@@ -137,12 +137,57 @@ bool Amoled::drawBitmap(int16_t x, int16_t y, uint16_t *bitmap, int16_t w, int16
 
 bool Amoled::drawArea(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint16_t *bitmap)
 {
-  const int offsetx1 = (controller_id == SH8601_ID) ? x1 : x1 + 0x06;
-  const int offsetx2 = (controller_id == SH8601_ID) ? x2 : x2 + 0x06;
-  const int offsety1 = y1;
-  const int offsety2 = y2;
-  return esp_lcd_panel_draw_bitmap(panel_handle, x1, y1, x2+1, y2+1, bitmap) == ESP_OK;
-};
+  if (!panel_handle || !bitmap) return false;
+
+  // Apply controller-specific X offset
+  int xs = (controller_id == SH8601_ID) ? (int)x1 : (int)x1 + 0x06;
+  int xe = (controller_id == SH8601_ID) ? (int)x2 : (int)x2 + 0x06;
+  int ys = (int)y1;
+  int ye = (int)y2;
+
+  int w  = xe - xs + 1;
+  int h  = ye - ys + 1;
+  if (w <= 0 || h <= 0) return true;
+
+  // CO5300 quirks: even width; height >= 2
+  const bool need_even_w   = (w & 1);
+  const int  push_w        = w + (need_even_w ? 1 : 0);
+  const int  push_h_step   = (controller_id == CO5300_ID) ? 2 : 1;
+
+  // Ensure line buffer can hold push_w * push_h_step pixels
+  if (!reserveLineBuffer()) return false;
+  if (lineBufferSize < push_w * push_h_step) return false;
+
+  for (int row = 0; row < h; row += push_h_step) {
+    // Number of rows available in this chunk
+    int rows_this = std::min(push_h_step, h - row);
+
+    // Build up to 2 rows into the DMA line buffer, padding last column if needed
+    for (int r = 0; r < rows_this; ++r) {
+      const uint16_t *src = bitmap + (row + r) * w;
+      uint16_t *dst = lineBuffer + r * push_w;
+      memcpy(dst, src, w * sizeof(uint16_t));
+      if (need_even_w) dst[push_w - 1] = src[w - 1]; // duplicate last column
+    }
+    // If controller wants 2 rows but only 1 remains, duplicate it
+    if (push_h_step == 2 && rows_this == 1) {
+      memcpy(lineBuffer + push_w, lineBuffer, push_w * sizeof(uint16_t));
+    }
+
+    int y_push = ys + row;
+    // If we duplicated the last single row, shift up to keep on-screen
+    if (push_h_step == 2 && rows_this == 1 && y_push > ys) y_push -= 1;
+
+    if (esp_lcd_panel_draw_bitmap(panel_handle,
+                                  xs, y_push,
+                                  xs + push_w, y_push + push_h_step,
+                                  lineBuffer) != ESP_OK) {
+      return false;
+    }
+  }
+  return true;
+}
+
 
 bool Amoled::pushToPanel(int x, int y, const uint16_t *buf, int w, int h)
 {
