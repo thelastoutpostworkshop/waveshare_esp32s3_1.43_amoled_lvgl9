@@ -55,6 +55,11 @@ void setup()
     lv_display_set_flush_cb(disp, my_disp_flush);
     lv_display_set_buffers(disp, buf1, buf2, DRAW_BUF_SIZE, LV_DISPLAY_RENDER_MODE_PARTIAL);
 
+    // Create input touchpad device
+    lv_indev_t *indev = lv_indev_create();
+    lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+    lv_indev_set_read_cb(indev, lvgl_touchpad_read);
+
     // register print function for debugging
 #if LV_USE_LOG != 0
     lv_log_register_print_cb(my_print);
@@ -68,6 +73,22 @@ void loop()
     delay(5);
 }
 
+// LVGL calls this function to read the touchpad
+void lvgl_touchpad_read(lv_indev_t *indev, lv_indev_data_t *data)
+{
+    uint16_t tp_x, tp_y;
+    uint8_t win = getTouch(&tp_x, &tp_y);
+    if (win)
+    {
+        data->point.x = tp_x;
+        data->point.y = tp_y;
+        data->state = LV_INDEV_STATE_PRESSED;
+    }
+    else
+    {
+        data->state = LV_INDEV_STATE_RELEASED;
+    }
+}
 // LVGL calls this function to print log information
 void my_print(lv_log_level_t level, const char *buf)
 {
