@@ -1,0 +1,15 @@
+profiles:
+  amoled:
+    fqbn: esp32:esp32:waveshare_esp32_s3_touch_amoled_143:UploadSpeed=921600,USBMode=hwcdc,CDCOnBoot=cdc,MSCOnBoot=default,DFUOnBoot=default,UploadMode=default,CPUFreq=240,FlashMode=qio,PartitionScheme=app3M_fat9M_16MB,DebugLevel=none,PSRAM=enabled,LoopCore=1,EventsCore=1,EraseFlash=none
+    platforms:
+      - platform: esp32:esp32 (3.3.0)
+    libraries:
+      - lvgl (9.2.2)
+    programmer: ""
+    port_config:
+      baudrate: "115200"
+      lineEnding: "\r\n"
+      bits: "8"
+      parity: none
+      stop_bits: "1"
+    port: COM5
