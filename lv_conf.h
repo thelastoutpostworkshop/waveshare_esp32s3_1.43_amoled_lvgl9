@@ -144,14 +144,14 @@
 	 */
 
 	#define LV_DRAW_SW_SUPPORT_RGB565		1
-	#define LV_DRAW_SW_SUPPORT_RGB565A8		0
-	#define LV_DRAW_SW_SUPPORT_RGB888		0
-	#define LV_DRAW_SW_SUPPORT_XRGB8888		0
-	#define LV_DRAW_SW_SUPPORT_ARGB8888		0
-	#define LV_DRAW_SW_SUPPORT_L8			0
-	#define LV_DRAW_SW_SUPPORT_AL88			0
-	#define LV_DRAW_SW_SUPPORT_A8			0
-	#define LV_DRAW_SW_SUPPORT_I1			0
+	#define LV_DRAW_SW_SUPPORT_RGB565A8		1
+	#define LV_DRAW_SW_SUPPORT_RGB888		1
+	#define LV_DRAW_SW_SUPPORT_XRGB8888		1
+	#define LV_DRAW_SW_SUPPORT_ARGB8888		1
+	#define LV_DRAW_SW_SUPPORT_L8			1
+	#define LV_DRAW_SW_SUPPORT_AL88			1
+	#define LV_DRAW_SW_SUPPORT_A8			1
+	#define LV_DRAW_SW_SUPPORT_I1			1
 
 	/* Set the number of draw unit.
      * > 1 requires an operating system enabled in `LV_USE_OS`
@@ -188,7 +188,7 @@
     #endif
 
     /* Enable drawing complex gradients in software: linear at an angle, radial or conical */
-    #define LV_USE_DRAW_SW_COMPLEX_GRADIENTS    0
+    #define LV_USE_DRAW_SW_COMPLEX_GRADIENTS    1
 #endif
 
 /* Use NXP's VG-Lite GPU on iMX RTxxx platforms. */
