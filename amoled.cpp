@@ -4,13 +4,12 @@ static const panel_lcd_init_cmd_t sh8601_lcd_init_cmds[] =
     {
         {0x11, (uint8_t[]){0x00}, 0, 120},
         {0x44, (uint8_t[]){0x01, 0xD1}, 2, 0},
-        // {0x35, (uint8_t[]){0x00}, 1, 0},
+        {0x35, (uint8_t[]){0x00}, 1, 0},
         {0x53, (uint8_t[]){0x20}, 1, 10},
         {0x51, (uint8_t[]){0x00}, 1, 10},
         {0x29, (uint8_t[]){0x00}, 0, 10},
         {0x51, (uint8_t[]){0xFF}, 1, 0},
         //{0x36, (uint8_t []){0x80}, 1, 0},
-        {0x34, (uint8_t[]){}, 0, 0}, // TE OFF
 
 };
 static const panel_lcd_init_cmd_t co5300_lcd_init_cmds[] =
@@ -18,14 +17,13 @@ static const panel_lcd_init_cmd_t co5300_lcd_init_cmds[] =
         {0x11, (uint8_t[]){0x00}, 0, 80},
         {0xC4, (uint8_t[]){0x80}, 1, 0},
         //{0x44, (uint8_t []){0x01, 0xD1}, 2, 0},
-        // {0x35, (uint8_t []){0x00}, 1, 0},//TE ON
-        {0x34, (uint8_t[]){}, 0, 0}, // TE OFF
+        //{0x35, (uint8_t []){0x00}, 1, 0},//TE ON
         {0x53, (uint8_t[]){0x20}, 1, 1},
         {0x63, (uint8_t[]){0xFF}, 1, 1},
         {0x51, (uint8_t[]){0x00}, 1, 1},
         {0x29, (uint8_t[]){0x00}, 0, 10},
         {0x51, (uint8_t[]){0xFF}, 1, 0},
-        // {0x36, (uint8_t []){0x60}, 1, 0},
+        //{0x36, (uint8_t []){0x60}, 1, 0},
 };
 
 // Convert byte to big endian
