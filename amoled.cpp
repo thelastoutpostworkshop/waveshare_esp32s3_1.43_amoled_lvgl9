@@ -90,24 +90,6 @@ bool Amoled::begin()
   return true;
 }
 
-// Reserve a two line buffer, co5300 needs a bitmap height that is greater than 1
-bool Amoled::reserveLineBuffer()
-{
-  if (lineBuffer)
-    return true;
-
-  const int push_w_max = (DISPLAY_WIDTH & 1) ? (DISPLAY_WIDTH + 1) : DISPLAY_WIDTH; // even
-  const int cap_elems = push_w_max * 2;                                             // 2 rows
-
-  lineBuffer = (uint16_t *)heap_caps_malloc(
-      cap_elems * sizeof(uint16_t),
-      MALLOC_CAP_DMA | MALLOC_CAP_8BIT);
-  if (!lineBuffer)
-    return false;
-
-  lineBufferSize = cap_elems; // capacity in elements
-  return true;
-}
 bool Amoled::drawBitmap(int16_t x, int16_t y, uint16_t *bitmap, int16_t w, int16_t h)
 {
   if (!panel_handle || !bitmap || w <= 0 || h <= 0)
@@ -135,95 +117,103 @@ bool Amoled::drawBitmap(int16_t x, int16_t y, uint16_t *bitmap, int16_t w, int16
   return pushToPanel(dx, dy, bitmap, w, h);
 }
 
-// In Amoled class:
+// Assumes members:
+//  - esp_lcd_panel_handle_t panel_handle;
+//  - uint8_t controller_id;            // CO5300_ID / SH8601_ID
+//  - uint16_t* lineBuffer = nullptr;   // DMA-capable
+//  - int lineBufferSize = 0;           // capacity in *pixels*
+//  - bool reserveLineBuffer();         // allocates single row: size = even(DISPLAY_WIDTH)
+
+static inline int even_width(int w) { return (w & 1) ? (w + 1) : w; }
 
 bool Amoled::drawArea(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint16_t *bitmap)
 {
-  if (!panel_handle || !bitmap) return false;
+  if (!panel_handle || !bitmap)
+    return false;
 
-  // Controller-specific X offset
-  const bool is_co5300 = (controller_id == CO5300_ID);
-  int xs = is_co5300 ? (int)x1 + 0x06 : (int)x1;
-  int ys = (int)y1;
-
-  // source (LVGL) rect size
-  const int w_src = (int)x2 - (int)x1 + 1;
-  const int h_src = (int)y2 - (int)y1 + 1;
-  if (w_src <= 0 || h_src <= 0) return true;
-
-  // Panel-friendly sizes
-  const int w_push = (w_src & 1) ? (w_src + 1) : w_src;           // even width
-  const int h_push = (is_co5300 && h_src == 1) ? 2 : h_src;       // min height 2 on CO5300
-
-  // Where we’ll push (don’t shift unless bottom edge + single row)
-  int y_push = ys;
-  if (is_co5300 && h_src == 1 && ys == (DISPLAY_HEIGHT - 1)) {
-    y_push = ys - 1; // keep on-screen
-  }
-
-  // Ensure line buffer exists and is large enough (DMA-capable)
-  if (!reserveLineBuffer()) return false;
-  const int needed = w_push * ((h_push == 1) ? 1 : 2);  // we build up to 2 rows at once
-  if (lineBufferSize < needed) return false;
-
-  // If h_src == 1 and we need 2 rows, duplicate the single line.
-  if (is_co5300 && h_src == 1) {
-    const uint16_t *src = bitmap;               // single row
-    uint16_t *dst0 = lineBuffer;                // row 0
-    uint16_t *dst1 = lineBuffer + w_push;       // row 1
-
-    memcpy(dst0, src, w_src * sizeof(uint16_t));
-    if (w_push > w_src) dst0[w_push - 1] = src[w_src - 1];  // duplicate last column
-
-    memcpy(dst1, src, w_src * sizeof(uint16_t));
-    if (w_push > w_src) dst1[w_push - 1] = src[w_src - 1];
-
-    if (esp_lcd_panel_draw_bitmap(panel_handle,
-                                  xs, y_push,
-                                  xs + w_push, y_push + 2,
-                                  lineBuffer) != ESP_OK) {
-      return false;
-    }
+  // Inclusive source area
+  int w = (int)x2 - (int)x1 + 1;
+  int h = (int)y2 - (int)y1 + 1;
+  if (w <= 0 || h <= 0)
     return true;
+
+  // Clip
+  if (x1 < 0)
+  {
+    w -= -x1;
+    x1 = 0;
   }
+  if (y1 < 0)
+  {
+    h -= -y1;
+    y1 = 0;
+  }
+  if (x1 + w > DISPLAY_WIDTH)
+    w = DISPLAY_WIDTH - x1;
+  if (y1 + h > DISPLAY_HEIGHT)
+    h = DISPLAY_HEIGHT - y1;
+  if (w <= 0 || h <= 0)
+    return true;
 
-  // h_src >= 2: push in chunks of 2 rows (or all at once if you prefer).
-  // Build two rows at a time to satisfy CO5300’s “>=2” preference consistently.
-  for (int row = 0; row < h_src; row += 2) {
-    int rows_this = (row + 1 < h_src) ? 2 : 1;
+  // Even width
+  int push_w = even_width(w);
+  bool pad_col = (push_w != w);
 
-    const uint16_t *src0 = bitmap + row * w_src;
-    uint16_t *dst0 = lineBuffer;
-    memcpy(dst0, src0, w_src * sizeof(uint16_t));
-    if (w_push > w_src) dst0[w_push - 1] = src0[w_src - 1];
+  // Ensure line buffer holds 2 rows
+  if (!reserveLineBuffer())
+    return false;
+  if (lineBufferSize < push_w * 2)
+    return false;
 
-    if (rows_this == 2) {
-      const uint16_t *src1 = bitmap + (row + 1) * w_src;
-      uint16_t *dst1 = lineBuffer + w_push;
-      memcpy(dst1, src1, w_src * sizeof(uint16_t));
-      if (w_push > w_src) dst1[w_push - 1] = src1[w_src - 1];
-    } else {
-      // last odd row: duplicate it to keep height=2
-      uint16_t *dst1 = lineBuffer + w_push;
-      memcpy(dst1, dst0, w_push * sizeof(uint16_t));
+  // Adjust for CO5300 X offset
+  int x_off = (controller_id == CO5300_ID) ? 6 : 0;
+
+  for (int row = 0; row < h; row += 2)
+  {
+    int rows_this = (row + 1 < h) ? 2 : 1;
+
+    // Build 2 rows (duplicate last row if odd)
+    for (int r = 0; r < rows_this; r++)
+    {
+      const uint16_t *src = bitmap + (row + r) * w;
+      memcpy(lineBuffer + r * push_w, src, w * sizeof(uint16_t));
+      if (pad_col)
+        lineBuffer[r * push_w + (push_w - 1)] = src[w - 1];
+    }
+    if (rows_this == 1)
+    { // duplicate last row
+      memcpy(lineBuffer + push_w, lineBuffer, push_w * sizeof(uint16_t));
     }
 
-    int y_chunk = ys + row;
-    if (rows_this == 1 && y_chunk == (DISPLAY_HEIGHT - 1)) {
-      y_chunk -= 1; // bottom-edge fix
-    }
+    int y_push = y1 + row;
+    if (rows_this == 1 && y_push == DISPLAY_HEIGHT - 1)
+      y_push -= 1;
 
     if (esp_lcd_panel_draw_bitmap(panel_handle,
-                                  xs, y_chunk,
-                                  xs + w_push, y_chunk + 2,
-                                  lineBuffer) != ESP_OK) {
+                                  x1 + x_off, y_push,
+                                  x1 + x_off + push_w, y_push + 2,
+                                  lineBuffer) != ESP_OK)
+    {
       return false;
     }
   }
-
   return true;
 }
 
+bool Amoled::reserveLineBuffer()
+{
+  if (lineBuffer)
+    return true;
+
+  int push_w_max = (DISPLAY_WIDTH & 1) ? DISPLAY_WIDTH + 1 : DISPLAY_WIDTH;
+  lineBuffer = (uint16_t *)heap_caps_malloc(push_w_max * 2 * sizeof(uint16_t),
+                                            MALLOC_CAP_DMA | MALLOC_CAP_8BIT);
+  if (!lineBuffer)
+    return false;
+
+  lineBufferSize = push_w_max * 2;
+  return true;
+}
 
 bool Amoled::pushToPanel(int x, int y, const uint16_t *buf, int w, int h)
 {
