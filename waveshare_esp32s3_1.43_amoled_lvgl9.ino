@@ -7,7 +7,6 @@
 #include "ui.h"
 #include "amoled.h"
 #include "FT3168.h" // Capacitive Touch functions
-// #define DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT / 10 * (LV_COLOR_DEPTH / 8))
 #define DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t))
 
 Amoled amoled; // Main object for the display
