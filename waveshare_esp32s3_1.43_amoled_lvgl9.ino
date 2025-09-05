@@ -54,6 +54,7 @@ void setup()
     disp = lv_display_create(DISPLAY_WIDTH, DISPLAY_HEIGHT);
     lv_display_set_flush_cb(disp, my_disp_flush);
     lv_display_set_buffers(disp, buf1, buf2, DRAW_BUF_SIZE, LV_DISPLAY_RENDER_MODE_PARTIAL);
+    lv_display_add_event_cb(disp, rounder_event_cb, LV_EVENT_INVALIDATE_AREA, NULL);
 
     // Create input touchpad device
     lv_indev_t *indev = lv_indev_create();
@@ -110,4 +111,20 @@ void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
     amoled.drawArea(area->x1, area->y1, area->x2, area->y2, (uint16_t *)px_map);
 
     lv_disp_flush_ready(disp);
+}
+
+// LVGL display rounder callback for CO5300
+static void rounder_event_cb(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_INVALIDATE_AREA) {
+        lv_area_t *area = (lv_area_t *)lv_event_get_param(e);
+        if (area) {
+            // Round coordinates for CO5300 display optimization
+            area->x1 = (area->x1) & ~1; // Round down to even
+            area->x2 = (area->x2) | 1;  // Round up to odd
+            area->y1 = (area->y1) & ~1; // Round down to even  
+            area->y2 = (area->y2) | 1;  // Round up to odd
+        }
+    }
 }

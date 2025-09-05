@@ -115,13 +115,6 @@ bool Amoled::drawBitmap(int16_t x, int16_t y, uint16_t *bitmap, int16_t w, int16
   return pushToPanel(dx, dy, bitmap, w, h);
 }
 
-// Assumes members:
-//  - esp_lcd_panel_handle_t panel_handle;
-//  - uint8_t controller_id;            // CO5300_ID / SH8601_ID
-//  - uint16_t* lineBuffer = nullptr;   // DMA-capable
-//  - int lineBufferSize = 0;           // capacity in *pixels*
-//  - bool reserveLineBuffer();         // allocates single row: size = even(DISPLAY_WIDTH)
-
 static inline int even_width(int w) { return (w & 1) ? (w + 1) : w; }
 
 bool Amoled::drawArea(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint16_t *bitmap)
