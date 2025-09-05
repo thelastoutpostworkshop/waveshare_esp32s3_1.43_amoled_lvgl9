@@ -1003,21 +1003,3 @@ unsigned char qmi8658_init(void)
 		return 0;
 	}
 }
-
-
-/*qmi8658c-example*/
-void qmi8658c_example(void* parmeter)
-{
-  float acc[3];
-  float gyro[3];
-  float temp;
-  qmi8658_init();
-	vTaskDelay(pdMS_TO_TICKS(1000));
-  for (;;)
-  {
-    qmi8658_read_xyz(acc,gyro);
-    temp = qmi8658_readTemp();
-    printf("x:%f y:%f z:%f gyro_x:%f gyro_y:%f gyro_z:%f Temp:%f\n",acc[0],acc[1],acc[2],gyro[0],gyro[1],gyro[2],temp);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-  }
-}

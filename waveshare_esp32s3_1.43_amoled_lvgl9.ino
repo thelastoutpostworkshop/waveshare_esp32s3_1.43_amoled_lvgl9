@@ -65,8 +65,10 @@ static void imu_task(void *arg)
 void setup()
 {
     Serial.begin(115200);
-    delay(4000); // Give time to the serial port to show initial messages printed on the serial port upon reset
+    delay(4000); //Optional :  give time to the serial port to show initial messages printed on the serial port upon reset
     Touch_Init();
+
+    // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope) 
     xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
 
     // Display initialization
