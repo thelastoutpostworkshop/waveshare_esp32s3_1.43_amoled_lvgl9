@@ -21,12 +21,10 @@ void ui_Screen1_screen_init(void)
     lv_image_set_src(ui_Image3, &ui_img_surface_level_png);
     lv_obj_set_width(ui_Image3, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Image3, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Image3, 0);
-    lv_obj_set_y(ui_Image3, 0);
     lv_obj_set_align(ui_Image3, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_Image3, LV_OBJ_FLAG_CLICKABLE);     /// Flags
     lv_obj_remove_flag(ui_Image3, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_image_set_scale(ui_Image3, 320);
+    lv_image_set_scale(ui_Image3, 350);
 
     uic_Screen1 = ui_Screen1;
 
