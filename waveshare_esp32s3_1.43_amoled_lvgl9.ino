@@ -108,8 +108,8 @@ void setup()
     lv_log_register_print_cb(my_print);
 #endif
 
-// Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
-xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
+    // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
+    xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
 
 #ifdef USE_BUILT_IN_EXAMPLE
     // Launch the UI example
@@ -118,10 +118,10 @@ xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
     // If you want to use a UI created with Squarline Studio, call it here
     // ex.: ui_init();
     ui_init();
+    // Periodic timer to update/move the bubble image using latest IMU data
+    lv_timer_create(move_bubble, 50, NULL); // ~20 Hz
 #endif
 
-    // Periodic timer to update/move the bubble image using latest IMU data
-    lv_timer_create(bubble_timer, 50, NULL); // ~20 Hz
 }
 
 void loop()
@@ -134,7 +134,7 @@ void loop()
 static void imu_task(void *arg)
 {
     qmi8658_init();
-    vTaskDelay(pdMS_TO_TICKS(1000));    // Do not change this delay, it is required by the QMI8658
+    vTaskDelay(pdMS_TO_TICKS(1000)); // Do not change this delay, it is required by the QMI8658
 
     for (;;)
     {
@@ -213,7 +213,7 @@ static void rounder_event_cb(lv_event_t *e)
 }
 
 // Periodic LVGL timer to move the bubble image based on latest IMU data
-void bubble_timer(lv_timer_t *timer)
+void move_bubble(lv_timer_t *timer)
 {
     LV_UNUSED(timer);
     if (!uic_bubble)
@@ -239,8 +239,14 @@ void bubble_timer(lv_timer_t *timer)
     float pitch_deg = (180.0f / 3.1415926f) * atan2f(-sm_ax, sqrtf(sm_ay * sm_ay + sm_az * sm_az));
     float s = (sm_az >= 0.0f) ? 1.0f : -1.0f; // normalize so flat => 0 roll
     float roll_deg = (180.0f / 3.1415926f) * atan2f(sm_ay * s, sm_az * s);
-    if (pitch_deg < -90) pitch_deg = -90; if (pitch_deg > 90) pitch_deg = 90;
-    if (roll_deg < -180) roll_deg = -180; if (roll_deg > 180) roll_deg = 180;
+    if (pitch_deg < -90)
+        pitch_deg = -90;
+    if (pitch_deg > 90)
+        pitch_deg = 90;
+    if (roll_deg < -180)
+        roll_deg = -180;
+    if (roll_deg > 180)
+        roll_deg = 180;
 
     // Find parent center
     lv_obj_t *parent = lv_obj_get_parent(uic_bubble);
@@ -263,7 +269,8 @@ void bubble_timer(lv_timer_t *timer)
 
     // Choose a radius that keeps bubble inside the dial (leave small margin)
     int r_max = (pw < ph ? pw : ph) / 2 - br - 10; // 10 px margin from ring
-    if (r_max < 0) r_max = 0;
+    if (r_max < 0)
+        r_max = 0;
 
     // Pixels per degree so that ~45° reaches near the ring
     float px_per_deg = r_max / 45.0f;
@@ -274,7 +281,8 @@ void bubble_timer(lv_timer_t *timer)
     if (rr > r_max && rr > 0.0f)
     {
         float k = (float)r_max / rr;
-        dx *= k; dy *= k;
+        dx *= k;
+        dy *= k;
     }
 
     // Position the bubble with its center at (cx+dx, cy+dy)
