@@ -296,7 +296,7 @@ void imu_ui_create(void)
     // Title
     lv_obj_t *title = lv_label_create(root);
     lv_label_set_text(title, "IMU (QMI8658)");
-    lv_obj_set_style_text_font(title, lv_theme_get_font_large(root), 0);
+    // lv_obj_set_style_text_font(title, lv_theme_get_font_large(root), 0);
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 78);
 
     // Chart (300x90), centered horizontally under the title
