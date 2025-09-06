@@ -365,6 +365,8 @@ void imu_ui_create(void)
     arc_pitch = lv_arc_create(gauges);
     lv_obj_set_size(arc_pitch, 120, 120);
     style_arc_gauge(arc_pitch, lv_palette_main(LV_PALETTE_CYAN));
+    // Allow negative values to be shown on the arc
+    lv_arc_set_range(arc_pitch, -90, 90);
     lv_obj_t *pitch_text = lv_label_create(arc_pitch);
     lv_label_set_text(pitch_text, "0°");
     lv_obj_center(pitch_text);
