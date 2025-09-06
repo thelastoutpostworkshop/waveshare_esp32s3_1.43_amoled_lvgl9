@@ -1,23 +1,35 @@
-// Tutorial : https://youtu.be/jYcxUgxz9ks
-// Use board "ESP32 Dev Module" (last tested on v3.2.0)
+// Tutorial :
+// Use board "ESP32 Dev Module" (last tested on v3.3.0)
 
-#define LV_CONF_INCLUDE_SIMPLE // Use the lv_conf.h included in this project, to configure see https://docs.lvgl.io/master/get-started/platforms/arduino.html
+// The next line instruct LVGL to use lv_conf.h included in this project
+#define LV_CONF_INCLUDE_SIMPLE 
 
 #include <lvgl.h> // Install "lvgl" with the Library Manager (last tested on v9.2.2)
 #include "amoled.h"
 #include "FT3168.h" // Capacitive Touch functions
 #include "qmi8658c.h"
 
-#define DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t))
+Amoled amoled; // Main object for the display board
 
-Amoled amoled; // Main object for the display
+#define LVGL_DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t))    // LVGL Display buffer size
+
+// LVGL global variables for the display and its buffers
 lv_display_t *disp;
-lv_color_t *buf1 = nullptr; // lv_color_t matches LV_COLOR_DEPTH
+lv_color_t *buf1 = nullptr; 
 lv_color_t *buf2 = nullptr;
 
 #define HISTORY_POINTS 60 // samples shown on the chart
 #define UI_UPDATE_MS 50   // ~20 Hz UI update
 #define RAD2DEG(x) ((x) * (180.0f / 3.1415926f))
+
+// Global to store the latest sample read the accelerometer and gyroscope (QMI8658)
+typedef struct
+{
+    float ax, ay, az;
+    float gx, gy, gz;
+    float temp;
+} ImuData;
+volatile ImuData g_imu; 
 
 // --- Globals (widget handles) ---
 static lv_obj_t *chart;
@@ -30,19 +42,75 @@ static lv_obj_t *lbl_axyz;
 static lv_obj_t *lbl_gxyz;
 static lv_obj_t *lbl_angles;
 
-typedef struct
+void setup()
 {
-    float ax, ay, az;
-    float gx, gy, gz;
-    float temp;
-} ImuData;
+    Serial.begin(115200);
 
-volatile ImuData g_imu; // latest sample (updated by a task)
+    // Optional: Give time to the serial port to show initial messages printed on the serial port upon reset
+    delay(4000); 
+    
+    // Initialize the touch screen
+    Touch_Init(); 
+
+    // Display initialization
+    if (!amoled.begin())
+    {
+        Serial.println("Display initialization failed!");
+        while (true)
+        {
+            /* no need to continue */
+        }
+    }
+    // init LVGL
+    lv_init();
+    lv_tick_set_cb(millis_cb);
+
+    buf1 = (lv_color_t *)heap_caps_malloc(LVGL_DRAW_BUF_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (!buf1)
+    {
+        Serial.println("LVGL buffer 1 allocate failed!");
+        while (true)
+        {
+        }
+    }
+
+    buf2 = (lv_color_t *)heap_caps_malloc(LVGL_DRAW_BUF_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (!buf2)
+    {
+        Serial.println("LVGL buffer 2 allocate failed!");
+        while (true)
+        {
+        }
+    }
+    disp = lv_display_create(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    lv_display_set_flush_cb(disp, my_disp_flush);
+    lv_display_set_buffers(disp, buf1, buf2, LVGL_DRAW_BUF_SIZE, LV_DISPLAY_RENDER_MODE_PARTIAL);
+    lv_display_add_event_cb(disp, rounder_event_cb, LV_EVENT_INVALIDATE_AREA, NULL);
+
+    // Create input touchpad device
+    lv_indev_t *indev = lv_indev_create();
+    lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+    lv_indev_set_read_cb(indev, lvgl_touchpad_read);
+
+    // register print function for debugging
+#if LV_USE_LOG != 0
+    lv_log_register_print_cb(my_print);
+#endif
+    // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
+    xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
+    imu_ui_create();
+}
+
+void loop()
+{
+    lv_timer_handler(); /* let LVGL do its GUI work */
+    delay(5);
+}
 
 static void imu_task(void *arg)
 {
     qmi8658_init();
-	vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(1000));
 
     for (;;)
     {
@@ -60,68 +128,6 @@ static void imu_task(void *arg)
 
         vTaskDelay(pdMS_TO_TICKS(100)); // 100 Hz sampling (adjust as you like)
     }
-}
-
-void setup()
-{
-    Serial.begin(115200);
-    delay(4000); //Optional :  give time to the serial port to show initial messages printed on the serial port upon reset
-    Touch_Init();
-
-    // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope) 
-    xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
-
-    // Display initialization
-    if (!amoled.begin())
-    {
-        Serial.println("Display initialization failed!");
-        while (true)
-        {
-            /* no need to continue */
-        }
-    }
-    // init LVGL
-    lv_init();
-    lv_tick_set_cb(millis_cb);
-
-    buf1 = (lv_color_t *)heap_caps_malloc(DRAW_BUF_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    if (!buf1)
-    {
-        Serial.println("LVGL buffer 1 allocate failed!");
-        while (true)
-        {
-        }
-    }
-
-    buf2 = (lv_color_t *)heap_caps_malloc(DRAW_BUF_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    if (!buf2)
-    {
-        Serial.println("LVGL buffer 2 allocate failed!");
-        while (true)
-        {
-        }
-    }
-    disp = lv_display_create(DISPLAY_WIDTH, DISPLAY_HEIGHT);
-    lv_display_set_flush_cb(disp, my_disp_flush);
-    lv_display_set_buffers(disp, buf1, buf2, DRAW_BUF_SIZE, LV_DISPLAY_RENDER_MODE_PARTIAL);
-    lv_display_add_event_cb(disp, rounder_event_cb, LV_EVENT_INVALIDATE_AREA, NULL);
-
-    // Create input touchpad device
-    lv_indev_t *indev = lv_indev_create();
-    lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
-    lv_indev_set_read_cb(indev, lvgl_touchpad_read);
-
-    // register print function for debugging
-#if LV_USE_LOG != 0
-    lv_log_register_print_cb(my_print);
-#endif
-    imu_ui_create();
-}
-
-void loop()
-{
-    lv_timer_handler(); /* let LVGL do its GUI work */
-    delay(5);
 }
 
 // Simple tilt (from accel only). For fused angle, feed your AHRS output here.
