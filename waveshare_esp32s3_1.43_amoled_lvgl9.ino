@@ -4,6 +4,9 @@
 // The next line instruct LVGL to use lv_conf.h included in this project
 #define LV_CONF_INCLUDE_SIMPLE 
 
+// Comment the next line if you want to use your own design (ex. from Squareline studio)
+#define USE_BUILT_IN_EXAMPLE
+
 #include <lvgl.h> // Install "lvgl" with the Library Manager (last tested on v9.2.2)
 #include "amoled.h"
 #include "FT3168.h" // Capacitive Touch functions
@@ -31,6 +34,7 @@ typedef struct
 } ImuData;
 volatile ImuData g_imu; 
 
+#ifdef USE_BUILT_IN_EXAMPLE
 // Globals variable for the example
 static lv_obj_t *chart;
 static lv_chart_series_t *ser_ax, *ser_ay, *ser_az;
@@ -41,6 +45,7 @@ static lv_obj_t *arc_roll;
 static lv_obj_t *lbl_axyz;
 static lv_obj_t *lbl_gxyz;
 static lv_obj_t *lbl_angles;
+#endif
 
 void setup()
 {
@@ -88,7 +93,6 @@ void setup()
     disp = lv_display_create(DISPLAY_WIDTH, DISPLAY_HEIGHT);
     lv_display_set_flush_cb(disp, my_disp_flush);
     lv_display_set_buffers(disp, lvgl_buf1, lvgl_buf2, LVGL_DRAW_BUF_SIZE, LV_DISPLAY_RENDER_MODE_PARTIAL);
-    lv_display_add_event_cb(disp, rounder_event_cb, LV_EVENT_INVALIDATE_AREA, NULL);
 
     // Create the LVGL input touchpad device
     lv_indev_t *indev = lv_indev_create();
@@ -100,11 +104,17 @@ void setup()
     lv_log_register_print_cb(my_print);
 #endif
 
+// If you want to use a UI created with Squarline Studio, call it here
+// ex.: ui_init();
+#ifdef USE_BUILT_IN_EXAMPLE
     // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
     xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
+    // Add the event to update the UI with the values read from QMI8658
+    lv_display_add_event_cb(disp, rounder_event_cb, LV_EVENT_INVALIDATE_AREA, NULL);
 
     // Launch the UI example
     imu_ui_create();
+#endif
 }
 
 void loop()
@@ -136,7 +146,6 @@ static void imu_task(void *arg)
         vTaskDelay(pdMS_TO_TICKS(100)); // 100 Hz sampling (adjust as you like)
     }
 }
-
 
 // LVGL calls this function to read the touchpad
 void lvgl_touchpad_read(lv_indev_t *indev, lv_indev_data_t *data)
@@ -196,6 +205,7 @@ static void rounder_event_cb(lv_event_t *e)
     }
 }
 
+#ifdef USE_BUILT_IN_EXAMPLE
 // All the functions below are the UI example
 //
 
@@ -306,3 +316,4 @@ void imu_ui_create(void)
     // Timer to refresh UI
     lv_timer_create(ui_tick_cb, UI_UPDATE_MS, NULL);
 }
+#endif
