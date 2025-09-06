@@ -15,8 +15,8 @@ Amoled amoled; // Main object for the display board
 
 // LVGL global variables for the display and its buffers
 lv_display_t *disp;
-lv_color_t *buf1 = nullptr; 
-lv_color_t *buf2 = nullptr;
+lv_color_t *lvgl_buf1 = nullptr; 
+lv_color_t *lvgl_buf2 = nullptr;
 
 #define HISTORY_POINTS 60 // samples shown on the chart
 #define UI_UPDATE_MS 50   // ~20 Hz UI update
@@ -61,30 +61,33 @@ void setup()
             /* no need to continue */
         }
     }
-    // init LVGL
+
+    // LVGL initialization
     lv_init();
     lv_tick_set_cb(millis_cb);
 
-    buf1 = (lv_color_t *)heap_caps_malloc(LVGL_DRAW_BUF_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    if (!buf1)
+    // LVGL Buffers allocation for the display
+    lvgl_buf1 = (lv_color_t *)heap_caps_malloc(LVGL_DRAW_BUF_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (!lvgl_buf1)
     {
         Serial.println("LVGL buffer 1 allocate failed!");
         while (true)
         {
         }
     }
-
-    buf2 = (lv_color_t *)heap_caps_malloc(LVGL_DRAW_BUF_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    if (!buf2)
+    lvgl_buf2 = (lv_color_t *)heap_caps_malloc(LVGL_DRAW_BUF_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (!lvgl_buf2)
     {
         Serial.println("LVGL buffer 2 allocate failed!");
         while (true)
         {
         }
     }
+
+    // Create the LVGL display
     disp = lv_display_create(DISPLAY_WIDTH, DISPLAY_HEIGHT);
     lv_display_set_flush_cb(disp, my_disp_flush);
-    lv_display_set_buffers(disp, buf1, buf2, LVGL_DRAW_BUF_SIZE, LV_DISPLAY_RENDER_MODE_PARTIAL);
+    lv_display_set_buffers(disp, lvgl_buf1, lvgl_buf2, LVGL_DRAW_BUF_SIZE, LV_DISPLAY_RENDER_MODE_PARTIAL);
     lv_display_add_event_cb(disp, rounder_event_cb, LV_EVENT_INVALIDATE_AREA, NULL);
 
     // Create input touchpad device
