@@ -5,7 +5,7 @@
 #define LV_CONF_INCLUDE_SIMPLE
 
 // Comment the next line if you want to use your own design (ex. from Squareline studio)
-#define USE_BUILT_IN_EXAMPLE
+// #define USE_BUILT_IN_EXAMPLE
 
 #include <lvgl.h> // Install "lvgl" with the Library Manager (last tested on v9.2.2)
 #include "amoled.h"
@@ -108,9 +108,10 @@ void setup()
     lv_log_register_print_cb(my_print);
 #endif
 
+// Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
+xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
+
 #ifdef USE_BUILT_IN_EXAMPLE
-    // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
-    xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
     // Launch the UI example
     imu_ui_create();
 #else
@@ -130,7 +131,7 @@ void loop()
 static void imu_task(void *arg)
 {
     qmi8658_init();
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(1000));    // Do not change this delay, it is required by the QMI8658
 
     for (;;)
     {
