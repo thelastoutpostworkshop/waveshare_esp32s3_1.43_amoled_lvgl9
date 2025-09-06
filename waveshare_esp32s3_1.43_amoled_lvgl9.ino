@@ -1,7 +1,8 @@
 // Tutorial :
-// Use board "ESP32 Dev Module" (last tested on v3.3.0)
+// Use board "Waveshare ESP32-S3-Touch-AMOLED-1.43" (last tested on v3.3.0)
 
 // The next line instruct LVGL to use lv_conf.h included in this project
+// Keep it this way, everything is configured correctly
 #define LV_CONF_INCLUDE_SIMPLE
 
 // Comment the next line if you want to use your own design (ex. from Squareline studio)
@@ -15,7 +16,8 @@
 
 Amoled amoled; // Main object for the display board
 
-#define LVGL_DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t)) // LVGL Display buffer size
+// LVGL Display buffer size
+#define LVGL_DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t)) 
 
 // LVGL global variables for the display and its buffers
 lv_display_t *disp;
@@ -31,7 +33,7 @@ typedef struct
 } ImuData;
 volatile ImuData g_imu;
 
-extern lv_obj_t *uic_bubble;
+extern lv_obj_t *uic_bubble;    // The bubble to move on the screen to show the level
 
 #ifdef USE_BUILT_IN_EXAMPLE
 // Globals variable for the example
