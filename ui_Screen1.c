@@ -24,6 +24,8 @@ void ui_Screen1_screen_init(void)
     lv_image_set_src(ui_Image3, &ui_img_surface_level_png);
     lv_obj_set_width(ui_Image3, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Image3, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Image3, 3);
+    lv_obj_set_y(ui_Image3, 15);
     lv_obj_set_align(ui_Image3, LV_ALIGN_CENTER);
     lv_obj_remove_flag(ui_Image3, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
                        LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE);     /// Flags
@@ -46,7 +48,7 @@ void ui_Screen1_screen_init(void)
     lv_label_set_text(ui_Label1, "Surface Level");
     lv_obj_remove_flag(ui_Label1, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
                        LV_OBJ_FLAG_SNAPPABLE);     /// Flags
-    lv_obj_set_style_text_font(ui_Label1, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label1, &lv_font_montserrat_26, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     uic_Screen1 = ui_Screen1;
     uic_bubble = ui_Image2;
