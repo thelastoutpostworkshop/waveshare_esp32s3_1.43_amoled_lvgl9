@@ -14,7 +14,7 @@
 
 Amoled amoled; // Main object for the display board
 
-#define LVGL_DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t)) // LVGL Display buffer size
+#define LVGL_DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t)/4) // LVGL Display buffer size
 
 // LVGL global variables for the display and its buffers
 lv_display_t *disp;
@@ -22,7 +22,7 @@ lv_color_t *lvgl_buf1 = nullptr;
 lv_color_t *lvgl_buf2 = nullptr;
 
 #define HISTORY_POINTS 60 // samples shown on the chart
-#define UI_UPDATE_MS 50   // ~20 Hz UI update
+#define UI_UPDATE_MS 50   
 #define RAD2DEG(x) ((x) * (180.0f / 3.1415926f))
 
 // Global to store the latest sample read the accelerometer and gyroscope (QMI8658)
