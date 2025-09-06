@@ -25,7 +25,7 @@ lv_color_t *lvgl_buf1 = nullptr;
 lv_color_t *lvgl_buf2 = nullptr;
 
 #ifdef USE_BUILT_IN_SURFACE_LEVEL_EXAMPLE
-// Globals variable for the example
+// Global variables for the example
 
 // Global to store the latest sample read the accelerometer and gyroscope (QMI8658)
 typedef struct
@@ -36,9 +36,11 @@ typedef struct
 } ImuData;
 volatile ImuData g_imu;
 
-extern lv_obj_t *uic_bubble;  // The bubble to move on the screen to show the level
-extern lv_obj_t *uic_Label_x; // Label for the y position of the bubble
-extern lv_obj_t *uic_Label_y; // Label for the x position of the bubble
+extern lv_obj_t *uic_bubble;     // The bubble to move on the screen to show the level
+extern lv_obj_t *uic_target_on;  // Target image to show when bubble is almost "level"
+extern lv_obj_t *uic_target_off; // Target image to show otherwise
+extern lv_obj_t *uic_Label_x;    // Label for the y position of the bubble
+extern lv_obj_t *uic_Label_y;    // Label for the x position of the bubble
 #endif
 
 void setup()
@@ -301,6 +303,22 @@ void move_bubble(lv_timer_t *timer)
     lv_label_set_text_fmt(uic_Label_y, "%.1f°", used_pitch);
     // Serial.printf("Bubble x=%d,y=%d\n",x,y);
     lv_obj_set_pos(uic_bubble, x, y);
+
+    // Toggle target images depending on proximity to center
+    const int target_threshold_px = 12; // within 12 px considered "level" (adjust as you like)
+    if (uic_target_on && uic_target_off)
+    {
+        if (rr <= target_threshold_px)
+        {
+            lv_obj_clear_flag(uic_target_on, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(uic_target_off, LV_OBJ_FLAG_HIDDEN);
+        }
+        else
+        {
+            lv_obj_clear_flag(uic_target_off, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(uic_target_on, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
 }
 
 #endif

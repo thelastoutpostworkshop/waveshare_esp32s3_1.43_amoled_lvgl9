@@ -5,6 +5,8 @@
 
 #include "ui.h"
 
+lv_obj_t * uic_target_on;
+lv_obj_t * uic_target_off;
 lv_obj_t * uic_Label_y;
 lv_obj_t * uic_Label_x;
 lv_obj_t * uic_y;
@@ -19,6 +21,8 @@ lv_obj_t * ui_Label2 = NULL;
 lv_obj_t * ui_Label3 = NULL;
 lv_obj_t * ui_Label4 = NULL;
 lv_obj_t * ui_Label5 = NULL;
+lv_obj_t * ui_Image4 = NULL;
+lv_obj_t * ui_Image5 = NULL;
 // event funtions
 
 // build funtions
@@ -56,23 +60,25 @@ void ui_Screen1_screen_init(void)
     lv_label_set_text(ui_Label1, "Surface Level");
     lv_obj_remove_flag(ui_Label1, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
                        LV_OBJ_FLAG_SNAPPABLE);     /// Flags
-    lv_obj_set_style_text_font(ui_Label1, &lv_font_montserrat_26, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label1, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Label2 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label2, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label2, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label2, -97);
+    lv_obj_set_x(ui_Label2, -99);
     lv_obj_set_y(ui_Label2, 129);
     lv_obj_set_align(ui_Label2, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label2, "X");
+    lv_obj_set_style_text_font(ui_Label2, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Label3 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label3, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Label3, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_Label3, 45);
+    lv_obj_set_x(ui_Label3, 43);
     lv_obj_set_y(ui_Label3, 129);
     lv_obj_set_align(ui_Label3, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label3, "Y");
+    lv_obj_set_style_text_font(ui_Label3, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Label4 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label4, LV_SIZE_CONTENT);   /// 1
@@ -81,7 +87,7 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_y(ui_Label4, 129);
     lv_obj_set_align(ui_Label4, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label4, "145°");
-    lv_obj_set_style_text_font(ui_Label4, &lv_font_montserrat_26, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label4, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Label5 = lv_label_create(ui_Screen1);
     lv_obj_set_width(ui_Label5, LV_SIZE_CONTENT);   /// 1
@@ -90,7 +96,27 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_y(ui_Label5, 129);
     lv_obj_set_align(ui_Label5, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label5, "145°");
-    lv_obj_set_style_text_font(ui_Label5, &lv_font_montserrat_26, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label5, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_Image4 = lv_image_create(ui_Screen1);
+    lv_image_set_src(ui_Image4, &ui_img_target_off_png);
+    lv_obj_set_width(ui_Image4, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Image4, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Image4, 0);
+    lv_obj_set_y(ui_Image4, 1);
+    lv_obj_set_align(ui_Image4, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Image4, LV_OBJ_FLAG_CLICKABLE);     /// Flags
+    lv_obj_remove_flag(ui_Image4, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_Image5 = lv_image_create(ui_Screen1);
+    lv_image_set_src(ui_Image5, &ui_img_target_on_png);
+    lv_obj_set_width(ui_Image5, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Image5, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Image5, 0);
+    lv_obj_set_y(ui_Image5, 1);
+    lv_obj_set_align(ui_Image5, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Image5, LV_OBJ_FLAG_CLICKABLE);     /// Flags
+    lv_obj_remove_flag(ui_Image5, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
     uic_Screen1 = ui_Screen1;
     uic_bubble = ui_Image2;
@@ -98,6 +124,8 @@ void ui_Screen1_screen_init(void)
     uic_y = ui_Label3;
     uic_Label_x = ui_Label4;
     uic_Label_y = ui_Label5;
+    uic_target_off = ui_Image4;
+    uic_target_on = ui_Image5;
 
 }
 
@@ -120,5 +148,9 @@ void ui_Screen1_screen_destroy(void)
     ui_Label4 = NULL;
     uic_Label_y = NULL;
     ui_Label5 = NULL;
+    uic_target_off = NULL;
+    ui_Image4 = NULL;
+    uic_target_on = NULL;
+    ui_Image5 = NULL;
 
 }

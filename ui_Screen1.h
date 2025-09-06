@@ -21,6 +21,8 @@ extern lv_obj_t * ui_Label2;
 extern lv_obj_t * ui_Label3;
 extern lv_obj_t * ui_Label4;
 extern lv_obj_t * ui_Label5;
+extern lv_obj_t * ui_Image4;
+extern lv_obj_t * ui_Image5;
 // CUSTOM VARIABLES
 extern lv_obj_t * uic_Screen1;
 extern lv_obj_t * uic_bubble;
@@ -28,6 +30,8 @@ extern lv_obj_t * uic_x;
 extern lv_obj_t * uic_y;
 extern lv_obj_t * uic_Label_x;
 extern lv_obj_t * uic_Label_y;
+extern lv_obj_t * uic_target_off;
+extern lv_obj_t * uic_target_on;
 
 #ifdef __cplusplus
 } /*extern "C"*/
