@@ -25,7 +25,8 @@ lv_color_t *lvgl_buf1 = nullptr;
 lv_color_t *lvgl_buf2 = nullptr;
 
 #ifdef USE_BUILT_IN_SURFACE_LEVEL_EXAMPLE
-// Global variables for the example
+// Globals for the surface level example
+#define TARGET_THRESHOLD_PX 20 // Target threshold in pixels when the bubble is almost level
 
 // Global to store the latest sample read the accelerometer and gyroscope (QMI8658)
 typedef struct
@@ -305,7 +306,7 @@ void move_bubble(lv_timer_t *timer)
     lv_obj_set_pos(uic_bubble, x, y);
 
     // Toggle target images depending on proximity to center
-    const int target_threshold_px = 12; // within 12 px considered "level" (adjust as you like)
+    const int target_threshold_px = TARGET_THRESHOLD_PX; // when to considered "level"
     if (uic_target_on && uic_target_off)
     {
         if (rr <= target_threshold_px)
