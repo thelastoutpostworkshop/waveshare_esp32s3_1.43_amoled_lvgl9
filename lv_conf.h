@@ -118,7 +118,7 @@
  *Requirements:
     `LV_USE_MATRIX = 1`.
     The rendering engine needs to support 3x3 matrix transformations.*/
-#define LV_DRAW_TRANSFORM_USE_MATRIX            0
+#define LV_DRAW_TRANSFORM_USE_MATRIX            1
 
 /* If a widget has `style_opa < 255` (not `bg_opa`, `text_opa` etc) or not NORMAL blend mode
  * it is buffered into a "simple" layer before rendering. The widget can be buffered in smaller chunks.
@@ -470,7 +470,7 @@
 
 /*Enable matrix support
  *Requires `LV_USE_FLOAT = 1`*/
-#define LV_USE_MATRIX           0
+#define LV_USE_MATRIX           1
 
 /*Include `lvgl_private.h` in `lvgl.h` to access internal data and functions by default*/
 #define LV_USE_PRIVATE_API		0
