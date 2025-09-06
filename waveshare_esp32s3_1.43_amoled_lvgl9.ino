@@ -280,7 +280,7 @@ void bubble_timer(lv_timer_t *timer)
     // Position the bubble with its center at (cx+dx, cy+dy)
     int x = (int)lrintf((float)cx + dx - bw / 2.0f);
     int y = (int)lrintf((float)cy + dy - bh / 2.0f);
-    Serial.printf("Bubble x=%d,y=%d\n",x,y);
+    // Serial.printf("Bubble x=%d,y=%d\n",x,y);
     lv_obj_set_pos(uic_bubble, x, y);
 }
 
