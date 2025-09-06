@@ -2,7 +2,7 @@
 // Use board "ESP32 Dev Module" (last tested on v3.3.0)
 
 // The next line instruct LVGL to use lv_conf.h included in this project
-#define LV_CONF_INCLUDE_SIMPLE 
+#define LV_CONF_INCLUDE_SIMPLE
 
 // Comment the next line if you want to use your own design (ex. from Squareline studio)
 #define USE_BUILT_IN_EXAMPLE
@@ -14,11 +14,11 @@
 
 Amoled amoled; // Main object for the display board
 
-#define LVGL_DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t))    // LVGL Display buffer size
+#define LVGL_DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t)) // LVGL Display buffer size
 
 // LVGL global variables for the display and its buffers
 lv_display_t *disp;
-lv_color_t *lvgl_buf1 = nullptr; 
+lv_color_t *lvgl_buf1 = nullptr;
 lv_color_t *lvgl_buf2 = nullptr;
 
 #define HISTORY_POINTS 60 // samples shown on the chart
@@ -32,7 +32,7 @@ typedef struct
     float gx, gy, gz;
     float temp;
 } ImuData;
-volatile ImuData g_imu; 
+volatile ImuData g_imu;
 
 #ifdef USE_BUILT_IN_EXAMPLE
 // Globals variable for the example
@@ -52,10 +52,10 @@ void setup()
     Serial.begin(115200);
 
     // Optional: Give time to the serial port to show initial messages printed on the serial port upon reset
-    delay(4000); 
-    
+    delay(4000);
+
     // Initialize the touch screen
-    Touch_Init(); 
+    Touch_Init();
 
     // Display initialization
     if (!amoled.begin())
@@ -100,7 +100,7 @@ void setup()
     lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
     lv_indev_set_read_cb(indev, lvgl_touchpad_read);
 
-    // Register LVGL print function for logging 
+    // Register LVGL print function for logging
 #if LV_USE_LOG != 0
     lv_log_register_print_cb(my_print);
 #endif
@@ -110,9 +110,6 @@ void setup()
 #ifdef USE_BUILT_IN_EXAMPLE
     // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
     xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
-    // Add the event to update the UI with the values read from QMI8658
-    lv_display_add_event_cb(disp, rounder_event_cb, LV_EVENT_INVALIDATE_AREA, NULL);
-
     // Launch the UI example
     imu_ui_create();
 #endif
@@ -185,7 +182,7 @@ void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
     // Serial.printf("x1=%d, y1=%d, x2=%d, y2=%d\n",area->x1, area->y1, area->x2, area->y2);
     amoled.drawArea(area->x1, area->y1, area->x2, area->y2, (uint16_t *)px_map);
 
-    lv_disp_flush_ready(disp);
+    lv_display_flush_ready(disp);
 }
 
 // LVGL display rounder callback for CO5300 (a kind of patch for LVGL 9)
@@ -242,8 +239,13 @@ static void ui_tick_cb(lv_timer_t *t)
     if (roll_deg > 90)
         roll_deg = 90;
 
-    lv_arc_set_value(arc_pitch, (int32_t)pitch_deg);
+    if (roll_deg < -180)
+        roll_deg = -180;
+    if (roll_deg > 180)
+        roll_deg = 180;
+
     lv_arc_set_value(arc_roll, (int32_t)roll_deg);
+    lv_arc_set_value(arc_pitch, (int32_t)pitch_deg);
 
     lv_label_set_text_fmt(lbl_axyz, "Accel: X %.3f  Y %.3f  Z %.3f g", ax, ay, az);
     lv_label_set_text_fmt(lbl_gxyz, "Gyro:  X %.1f  Y %.1f  Z %.1f dps", gx, gy, gz);
@@ -251,24 +253,27 @@ static void ui_tick_cb(lv_timer_t *t)
 }
 
 // ---------- Optional smoothing (keeps UI calm) ----------
-static inline float ema(float prev, float sample, float alpha) {
-    return prev + alpha * (sample - prev);    // alpha ~ 0.1..0.3
+static inline float ema(float prev, float sample, float alpha)
+{
+    return prev + alpha * (sample - prev); // alpha ~ 0.1..0.3
 }
 
 // ---------- Styles (one-time) ----------
-static void apply_chart_style(lv_obj_t *chart) {
+static void apply_chart_style(lv_obj_t *chart)
+{
     // dark translucent panel for the chart
     lv_obj_set_style_bg_color(chart, lv_color_hex(0x1d2430), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa  (chart, LV_OPA_70,            LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(chart, LV_OPA_70, LV_PART_MAIN);
     // division lines
     lv_chart_set_div_line_count(chart, 4, 8);
-    lv_obj_set_style_line_opa(chart, LV_OPA_40, LV_PART_MAIN);     // grid
+    lv_obj_set_style_line_opa(chart, LV_OPA_40, LV_PART_MAIN); // grid
     // series line width
-    lv_obj_set_style_line_width(chart, 3, LV_PART_ITEMS);          // series
+    lv_obj_set_style_line_width(chart, 3, LV_PART_ITEMS); // series
     lv_obj_set_style_pad_all(chart, 6, 0);
 }
 
-static void style_arc_gauge(lv_obj_t *arc, lv_color_t color) {
+static void style_arc_gauge(lv_obj_t *arc, lv_color_t color)
+{
     lv_obj_set_style_bg_opa(arc, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_arc_width(arc, 10, LV_PART_MAIN);
     lv_obj_set_style_arc_color(arc, lv_color_hex(0x2f3747), LV_PART_MAIN);
@@ -283,17 +288,17 @@ static void style_arc_gauge(lv_obj_t *arc, lv_color_t color) {
 // ---------- Build UI ----------
 void imu_ui_create(void)
 {
-    const int SAFE = 14;                 // keep content away from the round edge
+    const int SAFE = 14; // keep content away from the round edge
     lv_obj_t *root = lv_scr_act();
 
     // main container with padding; easier placement & avoids edge clipping
     lv_obj_t *wrap = lv_obj_create(root);
-    lv_obj_set_size(wrap, DISPLAY_WIDTH - SAFE*2, DISPLAY_HEIGHT - SAFE*2);
+    lv_obj_set_size(wrap, DISPLAY_WIDTH - SAFE * 2, DISPLAY_HEIGHT - SAFE * 2);
     lv_obj_center(wrap);
     lv_obj_set_style_bg_color(wrap, lv_color_hex(0x0f141c), 0);
-    lv_obj_set_style_bg_opa  (wrap, LV_OPA_90,               0);
-    lv_obj_set_style_pad_all (wrap, 10, 0);
-    lv_obj_set_style_radius  (wrap, 16, 0);
+    lv_obj_set_style_bg_opa(wrap, LV_OPA_90, 0);
+    lv_obj_set_style_pad_all(wrap, 10, 0);
+    lv_obj_set_style_radius(wrap, 16, 0);
     lv_obj_set_style_clip_corner(wrap, true, 0);
     lv_obj_set_flex_flow(wrap, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(wrap, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
@@ -316,14 +321,14 @@ void imu_ui_create(void)
     lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
     lv_chart_set_point_count(chart, HISTORY_POINTS);
     lv_chart_set_update_mode(chart, LV_CHART_UPDATE_MODE_SHIFT);
-    lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, -2*1000, 2*1000);
+    lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, -2 * 1000, 2 * 1000);
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_X, 0, HISTORY_POINTS - 1);
     apply_chart_style(chart);
 
     // Series
-    ser_ax = lv_chart_add_series(chart, lv_palette_main(LV_PALETTE_RED),   LV_CHART_AXIS_PRIMARY_Y);
+    ser_ax = lv_chart_add_series(chart, lv_palette_main(LV_PALETTE_RED), LV_CHART_AXIS_PRIMARY_Y);
     ser_ay = lv_chart_add_series(chart, lv_palette_main(LV_PALETTE_GREEN), LV_CHART_AXIS_PRIMARY_Y);
-    ser_az = lv_chart_add_series(chart, lv_palette_main(LV_PALETTE_BLUE),  LV_CHART_AXIS_PRIMARY_Y);
+    ser_az = lv_chart_add_series(chart, lv_palette_main(LV_PALETTE_BLUE), LV_CHART_AXIS_PRIMARY_Y);
 
     // Legend (color bullets + labels)
     lv_obj_t *legend = lv_obj_create(chartGrp);
@@ -333,7 +338,8 @@ void imu_ui_create(void)
     lv_obj_set_flex_flow(legend, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(legend, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER);
 
-    auto make_leg = [](lv_obj_t *parent, const char *txt, lv_color_t col) {
+    auto make_leg = [](lv_obj_t *parent, const char *txt, lv_color_t col)
+    {
         lv_obj_t *row = lv_obj_create(parent);
         lv_obj_set_style_bg_opa(row, LV_OPA_TRANSP, 0);
         lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
@@ -373,6 +379,8 @@ void imu_ui_create(void)
     arc_roll = lv_arc_create(gauges);
     lv_obj_set_size(arc_roll, 120, 120);
     style_arc_gauge(arc_roll, lv_palette_main(LV_PALETTE_INDIGO));
+    lv_arc_set_range(arc_roll, -180, 180);
+
     lv_obj_t *roll_text = lv_label_create(arc_roll);
     lv_label_set_text(roll_text, "0°");
     lv_obj_center(roll_text);
@@ -398,10 +406,11 @@ void imu_ui_create(void)
 
     // UI refresh timer
     lv_timer_create(
-        [](lv_timer_t *t){
+        [](lv_timer_t *t)
+        {
             LV_UNUSED(t);
             // (Optional) smooth values a bit for the arcs
-            static float sm_ax=0, sm_ay=0, sm_az=0;
+            static float sm_ax = 0, sm_ay = 0, sm_az = 0;
             sm_ax = ema(sm_ax, g_imu.ax, 0.2f);
             sm_ay = ema(sm_ay, g_imu.ay, 0.2f);
             sm_az = ema(sm_az, g_imu.az, 0.2f);
@@ -412,13 +421,19 @@ void imu_ui_create(void)
             lv_chart_set_next_value(chart, ser_az, (int32_t)(sm_az * 1000.0f));
 
             // Tilt from accel (use your fused output if you have it)
-            float pitch_deg = (180.0f/3.1415926f)*atan2f(-sm_ax, sqrtf(sm_ay*sm_ay + sm_az*sm_az));
-            float roll_deg  = (180.0f/3.1415926f)*atan2f( sm_ay, sm_az);
-            if (pitch_deg < -90) pitch_deg = -90; if (pitch_deg > 90) pitch_deg = 90;
-            if (roll_deg  < -90) roll_deg  = -90; if (roll_deg  > 90) roll_deg  = 90;
+            float pitch_deg = (180.0f / 3.1415926f) * atan2f(-sm_ax, sqrtf(sm_ay * sm_ay + sm_az * sm_az));
+            float roll_deg = (180.0f / 3.1415926f) * atan2f(sm_ay, sm_az);
+            if (pitch_deg < -90)
+                pitch_deg = -90;
+            if (pitch_deg > 90)
+                pitch_deg = 90;
+            if (roll_deg < -90)
+                roll_deg = -90;
+            if (roll_deg > 90)
+                roll_deg = 90;
 
             lv_arc_set_value(arc_pitch, (int32_t)pitch_deg);
-            lv_arc_set_value(arc_roll,  (int32_t)roll_deg);
+            lv_arc_set_value(arc_roll, (int32_t)roll_deg);
 
             // Update numeric readouts
             lv_label_set_text_fmt(lbl_axyz, "Accel: X %.3f  Y %.3f  Z %.3f g", g_imu.ax, g_imu.ay, g_imu.az);
@@ -427,11 +442,13 @@ void imu_ui_create(void)
 
             // update the numbers inside arcs
             lv_obj_t *pitch_text = lv_obj_get_child(arc_pitch, 0);
-            lv_obj_t *roll_text  = lv_obj_get_child(arc_roll,  0);
-            if (pitch_text) lv_label_set_text_fmt(pitch_text, "%.0f°", pitch_deg);
-            if (roll_text)  lv_label_set_text_fmt(roll_text,  "%.0f°", roll_deg);
-
-        }, UI_UPDATE_MS, NULL);
+            lv_obj_t *roll_text = lv_obj_get_child(arc_roll, 0);
+            if (pitch_text)
+                lv_label_set_text_fmt(pitch_text, "%.0f°", pitch_deg);
+            if (roll_text)
+                lv_label_set_text_fmt(roll_text, "%.0f°", roll_deg);
+        },
+        UI_UPDATE_MS, NULL);
 }
 
 #endif
