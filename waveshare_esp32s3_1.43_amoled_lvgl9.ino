@@ -275,8 +275,19 @@ void move_bubble(lv_timer_t *timer)
     // Pixels per degree so that ~45° reaches near the ring
     float px_per_deg = r_max / 45.0f;
 
-    float dx = roll_deg * px_per_deg;
-    float dy = -pitch_deg * px_per_deg;
+    // If your board axes are rotated relative to the screen,
+    // swap or invert here to match your expected motion.
+    const bool swap_axes = true;    // true: use roll for vertical, pitch for horizontal
+    const bool inv_pitch = false;   // flip vertical if needed
+    const bool inv_roll  = false;   // flip horizontal if needed
+
+    float used_pitch = swap_axes ? roll_deg  : pitch_deg;
+    float used_roll  = swap_axes ? pitch_deg : roll_deg;
+    if (inv_pitch) used_pitch = -used_pitch;
+    if (inv_roll)  used_roll  = -used_roll;
+
+    float dx = used_roll * px_per_deg;   // right = +
+    float dy = -used_pitch * px_per_deg; // up = +pitch
     float rr = sqrtf(dx * dx + dy * dy);
     if (rr > r_max && rr > 0.0f)
     {
