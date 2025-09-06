@@ -3,3 +3,8 @@
 // LVGL version: 9.2.2
 // Project name: surface_level
 
+#include "ui.h"
+
+void ui_comp_bubble_create_hook(lv_obj_t * comp)
+{
+}

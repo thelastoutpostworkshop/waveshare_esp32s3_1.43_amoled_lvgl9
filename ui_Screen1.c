@@ -8,6 +8,7 @@
 lv_obj_t * uic_Screen1;
 lv_obj_t * ui_Screen1 = NULL;
 lv_obj_t * ui_Image3 = NULL;
+lv_obj_t * ui_Image2 = NULL;
 // event funtions
 
 // build funtions
@@ -22,9 +23,17 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_width(ui_Image3, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_Image3, LV_SIZE_CONTENT);    /// 1
     lv_obj_set_align(ui_Image3, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_Image3, LV_OBJ_FLAG_CLICKABLE);     /// Flags
-    lv_obj_remove_flag(ui_Image3, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_remove_flag(ui_Image3, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
+                       LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE);     /// Flags
     lv_image_set_scale(ui_Image3, 350);
+
+    ui_Image2 = lv_image_create(ui_Screen1);
+    lv_image_set_src(ui_Image2, &ui_img_bubble_png);
+    lv_obj_set_width(ui_Image2, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Image2, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_Image2, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_Image2, LV_OBJ_FLAG_CLICKABLE);     /// Flags
+    lv_obj_remove_flag(ui_Image2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
     uic_Screen1 = ui_Screen1;
 
@@ -38,5 +47,6 @@ void ui_Screen1_screen_destroy(void)
     uic_Screen1 = NULL;
     ui_Screen1 = NULL;
     ui_Image3 = NULL;
+    ui_Image2 = NULL;
 
 }

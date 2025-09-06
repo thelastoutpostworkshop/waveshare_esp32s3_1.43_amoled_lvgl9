@@ -23,6 +23,8 @@ extern "C" {
 #endif
 
 #include "ui_helpers.h"
+#include "ui_comp.h"
+#include "ui_comp_hook.h"
 #include "ui_events.h"
 
 ///////////////////// SCREENS ////////////////////
@@ -38,6 +40,7 @@ extern lv_obj_t * ui____initial_actions0;
 
 // IMAGES AND IMAGE SETS
 LV_IMG_DECLARE(ui_img_surface_level_png);    // assets/surface_level.png
+LV_IMG_DECLARE(ui_img_bubble_png);    // assets/bubble.png
 
 // UI INIT
 void ui_init(void);
