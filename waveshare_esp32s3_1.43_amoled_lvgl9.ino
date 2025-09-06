@@ -31,7 +31,7 @@ typedef struct
 } ImuData;
 volatile ImuData g_imu; 
 
-// --- Globals (widget handles) ---
+// Globals variable for the example
 static lv_obj_t *chart;
 static lv_chart_series_t *ser_ax, *ser_ay, *ser_az;
 
@@ -90,17 +90,20 @@ void setup()
     lv_display_set_buffers(disp, lvgl_buf1, lvgl_buf2, LVGL_DRAW_BUF_SIZE, LV_DISPLAY_RENDER_MODE_PARTIAL);
     lv_display_add_event_cb(disp, rounder_event_cb, LV_EVENT_INVALIDATE_AREA, NULL);
 
-    // Create input touchpad device
+    // Create the LVGL input touchpad device
     lv_indev_t *indev = lv_indev_create();
     lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
     lv_indev_set_read_cb(indev, lvgl_touchpad_read);
 
-    // register print function for debugging
+    // Register LVGL print function for logging 
 #if LV_USE_LOG != 0
     lv_log_register_print_cb(my_print);
 #endif
+
     // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
     xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
+
+    // Launch the UI example
     imu_ui_create();
 }
 
@@ -110,6 +113,7 @@ void loop()
     delay(5);
 }
 
+// Task to read the values of QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
 static void imu_task(void *arg)
 {
     qmi8658_init();
@@ -133,6 +137,68 @@ static void imu_task(void *arg)
     }
 }
 
+
+// LVGL calls this function to read the touchpad
+void lvgl_touchpad_read(lv_indev_t *indev, lv_indev_data_t *data)
+{
+    uint16_t tp_x = 0, tp_y = 0;
+    uint8_t win = getTouch(&tp_x, &tp_y);
+    if (win)
+    {
+        data->point.x = tp_x;
+        data->point.y = tp_y;
+        data->state = LV_INDEV_STATE_PRESSED;
+    }
+    else
+    {
+        data->state = LV_INDEV_STATE_RELEASED;
+    }
+}
+
+// LVGL calls this function to print log information
+void my_print(lv_log_level_t level, const char *buf)
+{
+    LV_UNUSED(level);
+    Serial.println(buf);
+    Serial.flush();
+}
+
+// LVGL calls this function to retrieve elapsed time
+uint32_t millis_cb(void)
+{
+    return millis();
+}
+
+// LVGL calls this function when a rendered image needs to copied to the display
+void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
+{
+    // Serial.printf("x1=%d, y1=%d, x2=%d, y2=%d\n",area->x1, area->y1, area->x2, area->y2);
+    amoled.drawArea(area->x1, area->y1, area->x2, area->y2, (uint16_t *)px_map);
+
+    lv_disp_flush_ready(disp);
+}
+
+// LVGL display rounder callback for CO5300 (a kind of patch for LVGL 9)
+static void rounder_event_cb(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_INVALIDATE_AREA)
+    {
+        lv_area_t *area = (lv_area_t *)lv_event_get_param(e);
+        if (area)
+        {
+            // Round coordinates for CO5300 display optimization
+            area->x1 = (area->x1) & ~1; // Round down to even
+            area->x2 = (area->x2) | 1;  // Round up to odd
+            area->y1 = (area->y1) & ~1; // Round down to even
+            area->y2 = (area->y2) | 1;  // Round up to odd
+        }
+    }
+}
+
+// All the functions below are the UI example
+//
+
 // Simple tilt (from accel only). For fused angle, feed your AHRS output here.
 static void compute_pitch_roll_from_accel(float ax, float ay, float az, float *pitch_deg, float *roll_deg)
 {
@@ -142,6 +208,7 @@ static void compute_pitch_roll_from_accel(float ax, float ay, float az, float *p
     *roll_deg = RAD2DEG(atan2f(ay, az));
 }
 
+// LVGL will call this function to update the UI with the latest sample read the accelerometer and gyroscope (QMI8658)
 static void ui_tick_cb(lv_timer_t *t)
 {
     LV_UNUSED(t);
@@ -172,7 +239,7 @@ static void ui_tick_cb(lv_timer_t *t)
     lv_label_set_text_fmt(lbl_angles, "Pitch %.1f°  Roll %.1f°  T %.1fC", pitch_deg, roll_deg, temp);
 }
 
-// --- UI builder ---
+// Main UI creation
 void imu_ui_create(void)
 {
     lv_obj_t *root = lv_scr_act();
@@ -238,61 +305,4 @@ void imu_ui_create(void)
 
     // Timer to refresh UI
     lv_timer_create(ui_tick_cb, UI_UPDATE_MS, NULL);
-}
-
-// LVGL calls this function to read the touchpad
-void lvgl_touchpad_read(lv_indev_t *indev, lv_indev_data_t *data)
-{
-    uint16_t tp_x = 0, tp_y = 0;
-    uint8_t win = getTouch(&tp_x, &tp_y);
-    if (win)
-    {
-        data->point.x = tp_x;
-        data->point.y = tp_y;
-        data->state = LV_INDEV_STATE_PRESSED;
-    }
-    else
-    {
-        data->state = LV_INDEV_STATE_RELEASED;
-    }
-}
-// LVGL calls this function to print log information
-void my_print(lv_log_level_t level, const char *buf)
-{
-    LV_UNUSED(level);
-    Serial.println(buf);
-    Serial.flush();
-}
-
-// LVGL calls this function to retrieve elapsed time
-uint32_t millis_cb(void)
-{
-    return millis();
-}
-
-// LVGL calls this function when a rendered image needs to copied to the display
-void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
-{
-    // Serial.printf("x1=%d, y1=%d, x2=%d, y2=%d\n",area->x1, area->y1, area->x2, area->y2);
-    amoled.drawArea(area->x1, area->y1, area->x2, area->y2, (uint16_t *)px_map);
-
-    lv_disp_flush_ready(disp);
-}
-
-// LVGL display rounder callback for CO5300
-static void rounder_event_cb(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_INVALIDATE_AREA)
-    {
-        lv_area_t *area = (lv_area_t *)lv_event_get_param(e);
-        if (area)
-        {
-            // Round coordinates for CO5300 display optimization
-            area->x1 = (area->x1) & ~1; // Round down to even
-            area->x2 = (area->x2) | 1;  // Round up to odd
-            area->y1 = (area->y1) & ~1; // Round down to even
-            area->y2 = (area->y2) | 1;  // Round up to odd
-        }
-    }
 }
