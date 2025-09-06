@@ -213,7 +213,10 @@ static void compute_pitch_roll_from_accel(float ax, float ay, float az, float *p
     // Using common aerospace-ish convention:
     // pitch = atan2(-ax, sqrt(ay^2 + az^2)), roll = atan2(ay, az)
     *pitch_deg = RAD2DEG(atan2f(-ax, sqrtf(ay * ay + az * az)));
-    *roll_deg = RAD2DEG(atan2f(ay, az));
+    // Normalize roll so that when the device is flat, roll = 0,
+    // regardless of whether az is positive or negative.
+    float s = (az >= 0.0f) ? 1.0f : -1.0f;
+    *roll_deg = RAD2DEG(atan2f(ay * s, az * s));
 }
 
 // LVGL will call this function to update the UI with the latest sample read the accelerometer and gyroscope (QMI8658)
@@ -420,7 +423,9 @@ void imu_ui_create(void)
 
             // Tilt from accel (use your fused output if you have it)
             float pitch_deg = (180.0f / 3.1415926f) * atan2f(-sm_ax, sqrtf(sm_ay * sm_ay + sm_az * sm_az));
-            float roll_deg = (180.0f / 3.1415926f) * atan2f(sm_ay, sm_az);
+            // Same normalization as compute_pitch_roll_from_accel(): ensure roll=0 when flat
+            float s = (sm_az >= 0.0f) ? 1.0f : -1.0f;
+            float roll_deg = (180.0f / 3.1415926f) * atan2f(sm_ay * s, sm_az * s);
             if (pitch_deg < -90)
                 pitch_deg = -90;
             if (pitch_deg > 90)
