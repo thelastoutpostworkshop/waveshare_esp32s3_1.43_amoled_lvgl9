@@ -5,6 +5,7 @@
 
 #include "ui.h"
 
+lv_obj_t * uic_bubble;
 lv_obj_t * uic_Screen1;
 lv_obj_t * ui_Screen1 = NULL;
 lv_obj_t * ui_Image3 = NULL;
@@ -36,6 +37,7 @@ void ui_Screen1_screen_init(void)
     lv_obj_remove_flag(ui_Image2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
     uic_Screen1 = ui_Screen1;
+    uic_bubble = ui_Image2;
 
 }
 
@@ -47,6 +49,7 @@ void ui_Screen1_screen_destroy(void)
     uic_Screen1 = NULL;
     ui_Screen1 = NULL;
     ui_Image3 = NULL;
+    uic_bubble = NULL;
     ui_Image2 = NULL;
 
 }

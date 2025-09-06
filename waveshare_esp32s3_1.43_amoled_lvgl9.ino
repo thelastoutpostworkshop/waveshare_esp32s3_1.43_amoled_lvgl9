@@ -31,6 +31,8 @@ typedef struct
 } ImuData;
 volatile ImuData g_imu;
 
+extern lv_obj_t *uic_bubble;
+
 #ifdef USE_BUILT_IN_EXAMPLE
 // Globals variable for the example
 static lv_obj_t *chart;
@@ -106,9 +108,9 @@ void setup()
     lv_log_register_print_cb(my_print);
 #endif
 
-// If you want to use a UI created with Squarline Studio, call it here
-// ex.: ui_init();
-ui_init();
+    // If you want to use a UI created with Squarline Studio, call it here
+    // ex.: ui_init();
+    ui_init();
 #ifdef USE_BUILT_IN_EXAMPLE
     // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
     xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
