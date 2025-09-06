@@ -14,16 +14,12 @@
 
 Amoled amoled; // Main object for the display board
 
-#define LVGL_DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t)/4) // LVGL Display buffer size
+#define LVGL_DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t) / 4) // LVGL Display buffer size
 
 // LVGL global variables for the display and its buffers
 lv_display_t *disp;
 lv_color_t *lvgl_buf1 = nullptr;
 lv_color_t *lvgl_buf2 = nullptr;
-
-#define HISTORY_POINTS 60 // samples shown on the chart
-#define UI_UPDATE_MS 50   
-#define RAD2DEG(x) ((x) * (180.0f / 3.1415926f))
 
 // Global to store the latest sample read the accelerometer and gyroscope (QMI8658)
 typedef struct
@@ -45,6 +41,10 @@ static lv_obj_t *arc_roll;
 static lv_obj_t *lbl_axyz;
 static lv_obj_t *lbl_gxyz;
 static lv_obj_t *lbl_angles;
+
+#define HISTORY_POINTS 60 // samples shown on the chart
+#define UI_UPDATE_MS 50
+#define RAD2DEG(x) ((x) * (180.0f / 3.1415926f))
 #endif
 
 void setup()
@@ -287,7 +287,9 @@ static void style_arc_gauge(lv_obj_t *arc, lv_color_t color)
 // ---------- Build UI ----------
 void imu_ui_create(void)
 {
-    const int SAFE = 14; // keep content away from the round edge
+    // Keep content inside the visible circular area.
+    // A ~15% margin ensures a square UI fits in the circle (corners won't be cut).
+    const int SAFE = (DISPLAY_WIDTH * 15) / 100; // ~0.146 * diameter
     lv_obj_t *root = lv_scr_act();
 
     // main container with padding; easier placement & avoids edge clipping
@@ -295,10 +297,12 @@ void imu_ui_create(void)
     lv_obj_set_size(wrap, DISPLAY_WIDTH - SAFE * 2, DISPLAY_HEIGHT - SAFE * 2);
     lv_obj_center(wrap);
     lv_obj_set_style_bg_color(wrap, lv_color_hex(0x0f141c), 0);
-    lv_obj_set_style_bg_opa(wrap, LV_OPA_90, 0);
+    // Use opaque bg to avoid layer allocations on alpha blending
+    lv_obj_set_style_bg_opa(wrap, LV_OPA_COVER, 0);
     lv_obj_set_style_pad_all(wrap, 10, 0);
-    lv_obj_set_style_radius(wrap, 16, 0);
-    lv_obj_set_style_clip_corner(wrap, true, 0);
+    // Rounded look without clipping children (saves RAM). Children are kept inside by SAFE margin.
+    lv_obj_set_style_radius(wrap, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_clip_corner(wrap, false, 0);
     lv_obj_set_flex_flow(wrap, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(wrap, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
     lv_obj_set_style_pad_row(wrap, 8, 0);
