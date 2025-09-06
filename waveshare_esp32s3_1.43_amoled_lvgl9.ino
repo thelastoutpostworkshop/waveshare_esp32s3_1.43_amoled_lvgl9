@@ -234,11 +234,7 @@ static void ui_tick_cb(lv_timer_t *t)
         pitch_deg = -90;
     if (pitch_deg > 90)
         pitch_deg = 90;
-    if (roll_deg < -90)
-        roll_deg = -90;
-    if (roll_deg > 90)
-        roll_deg = 90;
-
+    // Allow full range for roll
     if (roll_deg < -180)
         roll_deg = -180;
     if (roll_deg > 180)
@@ -427,10 +423,11 @@ void imu_ui_create(void)
                 pitch_deg = -90;
             if (pitch_deg > 90)
                 pitch_deg = 90;
-            if (roll_deg < -90)
-                roll_deg = -90;
-            if (roll_deg > 90)
-                roll_deg = 90;
+            // Allow full range for roll
+            if (roll_deg < -180)
+                roll_deg = -180;
+            if (roll_deg > 180)
+                roll_deg = 180;
 
             lv_arc_set_value(arc_pitch, (int32_t)pitch_deg);
             lv_arc_set_value(arc_roll, (int32_t)roll_deg);
