@@ -17,12 +17,15 @@
 Amoled amoled; // Main object for the display board
 
 // LVGL Display buffer size
-#define LVGL_DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t)) 
+#define LVGL_DRAW_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(lv_color_t))
 
 // LVGL global variables for the display and its buffers
 lv_display_t *disp;
 lv_color_t *lvgl_buf1 = nullptr;
 lv_color_t *lvgl_buf2 = nullptr;
+
+#ifdef USE_BUILT_IN_EXAMPLE
+// Globals variable for the example
 
 // Global to store the latest sample read the accelerometer and gyroscope (QMI8658)
 typedef struct
@@ -33,10 +36,7 @@ typedef struct
 } ImuData;
 volatile ImuData g_imu;
 
-extern lv_obj_t *uic_bubble;    // The bubble to move on the screen to show the level
-
-#ifdef USE_BUILT_IN_EXAMPLE
-// Globals variable for the example
+extern lv_obj_t *uic_bubble; // The bubble to move on the screen to show the level
 
 #endif
 
@@ -98,12 +98,11 @@ void setup()
     lv_log_register_print_cb(my_print);
 #endif
 
-    // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
-    xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
-
 #ifdef USE_BUILT_IN_EXAMPLE
     // Launch the UI example
     ui_init();
+    // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
+    xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
     // Periodic timer to update/move the bubble image using latest IMU data
     lv_timer_create(move_bubble, 50, NULL); // ~20 Hz
 #else
@@ -200,6 +199,7 @@ static void rounder_event_cb(lv_event_t *e)
     }
 }
 
+#ifdef USE_BUILT_IN_EXAMPLE
 // Periodic LVGL timer to move the bubble image based on latest IMU data
 void move_bubble(lv_timer_t *timer)
 {
@@ -292,7 +292,5 @@ void move_bubble(lv_timer_t *timer)
     // Serial.printf("Bubble x=%d,y=%d\n",x,y);
     lv_obj_set_pos(uic_bubble, x, y);
 }
-
-#ifdef USE_BUILT_IN_EXAMPLE
 
 #endif
