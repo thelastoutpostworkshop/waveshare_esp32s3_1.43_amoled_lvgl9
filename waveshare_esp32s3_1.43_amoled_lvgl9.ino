@@ -262,7 +262,8 @@ static void apply_chart_style(lv_obj_t *chart)
 {
     // dark translucent panel for the chart
     lv_obj_set_style_bg_color(chart, lv_color_hex(0x1d2430), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(chart, LV_OPA_70, LV_PART_MAIN);
+    // Opaque background to avoid temporary layer allocations on transparency
+    lv_obj_set_style_bg_opa(chart, LV_OPA_COVER, LV_PART_MAIN);
     // division lines
     lv_chart_set_div_line_count(chart, 4, 8);
     lv_obj_set_style_line_opa(chart, LV_OPA_40, LV_PART_MAIN); // grid
@@ -287,40 +288,21 @@ static void style_arc_gauge(lv_obj_t *arc, lv_color_t color)
 // ---------- Build UI ----------
 void imu_ui_create(void)
 {
-    // Keep content inside the visible circular area.
-    // A ~15% margin ensures a square UI fits in the circle (corners won't be cut).
-    const int SAFE = (DISPLAY_WIDTH * 15) / 100; // ~0.146 * diameter
+    // Fixed pixel layout for a 466x466 circular display.
+    // Chosen constants keep all widgets inside the visible circle,
+    // using the inscribed 320x320 square centered on screen (left/top=73).
     lv_obj_t *root = lv_scr_act();
 
-    // main container with padding; easier placement & avoids edge clipping
-    lv_obj_t *wrap = lv_obj_create(root);
-    lv_obj_set_size(wrap, DISPLAY_WIDTH - SAFE * 2, DISPLAY_HEIGHT - SAFE * 2);
-    lv_obj_center(wrap);
-    lv_obj_set_style_bg_color(wrap, lv_color_hex(0x0f141c), 0);
-    // Use opaque bg to avoid layer allocations on alpha blending
-    lv_obj_set_style_bg_opa(wrap, LV_OPA_COVER, 0);
-    lv_obj_set_style_pad_all(wrap, 10, 0);
-    // Rounded look without clipping children (saves RAM). Children are kept inside by SAFE margin.
-    lv_obj_set_style_radius(wrap, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_clip_corner(wrap, false, 0);
-    lv_obj_set_flex_flow(wrap, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(wrap, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-    lv_obj_set_style_pad_row(wrap, 8, 0);
-
     // Title
-    lv_obj_t *title = lv_label_create(wrap);
+    lv_obj_t *title = lv_label_create(root);
     lv_label_set_text(title, "IMU (QMI8658)");
     lv_obj_set_style_text_font(title, lv_theme_get_font_large(root), 0);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 78);
 
-    // CHART + legend group
-    lv_obj_t *chartGrp = lv_obj_create(wrap);
-    lv_obj_set_size(chartGrp, LV_PCT(100), 160);
-    lv_obj_set_style_bg_opa(chartGrp, LV_OPA_TRANSP, 0);
-    lv_obj_set_style_pad_all(chartGrp, 0, 0);
-
-    chart = lv_chart_create(chartGrp);
-    lv_obj_set_size(chart, LV_PCT(100), 132);
-    lv_obj_align(chart, LV_ALIGN_TOP_MID, 0, 0);
+    // Chart (300x90), centered horizontally under the title
+    chart = lv_chart_create(root);
+    lv_obj_set_size(chart, 300, 90);
+    lv_obj_align(chart, LV_ALIGN_TOP_MID, 0, 102);
     lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
     lv_chart_set_point_count(chart, HISTORY_POINTS);
     lv_chart_set_update_mode(chart, LV_CHART_UPDATE_MODE_SHIFT);
@@ -333,10 +315,10 @@ void imu_ui_create(void)
     ser_ay = lv_chart_add_series(chart, lv_palette_main(LV_PALETTE_GREEN), LV_CHART_AXIS_PRIMARY_Y);
     ser_az = lv_chart_add_series(chart, lv_palette_main(LV_PALETTE_BLUE), LV_CHART_AXIS_PRIMARY_Y);
 
-    // Legend (color bullets + labels)
-    lv_obj_t *legend = lv_obj_create(chartGrp);
-    lv_obj_set_size(legend, LV_PCT(100), 24);
-    lv_obj_align(legend, LV_ALIGN_BOTTOM_MID, 0, 0);
+    // Legend directly under the chart (300x20)
+    lv_obj_t *legend = lv_obj_create(root);
+    lv_obj_set_size(legend, 300, 20);
+    lv_obj_align(legend, LV_ALIGN_TOP_MID, 0, 198);
     lv_obj_set_style_bg_opa(legend, LV_OPA_TRANSP, 0);
     lv_obj_set_flex_flow(legend, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(legend, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER);
@@ -361,53 +343,46 @@ void imu_ui_create(void)
     make_leg(legend, "Ay", lv_palette_main(LV_PALETTE_GREEN));
     make_leg(legend, "Az", lv_palette_main(LV_PALETTE_BLUE));
 
-    // Gauges row
-    lv_obj_t *gauges = lv_obj_create(wrap);
-    lv_obj_set_size(gauges, LV_PCT(100), 135);
-    lv_obj_set_style_bg_opa(gauges, LV_OPA_TRANSP, 0);
-    lv_obj_set_flex_flow(gauges, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(gauges, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER);
-
+    // Gauges: two 100x100 arcs centered horizontally at y~268
     // Pitch
-    arc_pitch = lv_arc_create(gauges);
-    lv_obj_set_size(arc_pitch, 120, 120);
+    arc_pitch = lv_arc_create(root);
+    lv_obj_set_size(arc_pitch, 100, 100);
     style_arc_gauge(arc_pitch, lv_palette_main(LV_PALETTE_CYAN));
-    // Allow negative values to be shown on the arc
     lv_arc_set_range(arc_pitch, -90, 90);
+    lv_obj_align(arc_pitch, LV_ALIGN_CENTER, -80, 35);
     lv_obj_t *pitch_text = lv_label_create(arc_pitch);
     lv_label_set_text(pitch_text, "0°");
     lv_obj_center(pitch_text);
-    lv_obj_t *lblP = lv_label_create(gauges);
+    lv_obj_t *lblP = lv_label_create(root);
     lv_label_set_text(lblP, "Pitch");
+    lv_obj_align_to(lblP, arc_pitch, LV_ALIGN_OUT_BOTTOM_MID, 0, 2);
 
     // Roll
-    arc_roll = lv_arc_create(gauges);
-    lv_obj_set_size(arc_roll, 120, 120);
+    arc_roll = lv_arc_create(root);
+    lv_obj_set_size(arc_roll, 100, 100);
     style_arc_gauge(arc_roll, lv_palette_main(LV_PALETTE_INDIGO));
     lv_arc_set_range(arc_roll, -180, 180);
+    lv_obj_align(arc_roll, LV_ALIGN_CENTER, 80, 35);
 
     lv_obj_t *roll_text = lv_label_create(arc_roll);
     lv_label_set_text(roll_text, "0°");
     lv_obj_center(roll_text);
-    lv_obj_t *lblR = lv_label_create(gauges);
+    lv_obj_t *lblR = lv_label_create(root);
     lv_label_set_text(lblR, "Roll");
+    lv_obj_align_to(lblR, arc_roll, LV_ALIGN_OUT_BOTTOM_MID, 0, 2);
 
-    // Footer readouts (moved up so they don't get clipped by the circle)
-    lv_obj_t *footer = lv_obj_create(wrap);
-    lv_obj_set_size(footer, LV_PCT(100), LV_SIZE_CONTENT);
-    lv_obj_set_style_bg_opa(footer, LV_OPA_TRANSP, 0);
-    lv_obj_set_flex_flow(footer, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_style_pad_all(footer, 0, 0);
-    lv_obj_set_style_pad_row(footer, 2, 0);
-
-    lbl_axyz = lv_label_create(footer);
+    // Footer readouts at the bottom inside the safe square
+    lbl_axyz = lv_label_create(root);
     lv_label_set_text(lbl_axyz, "Accel: X 0.000  Y 0.000  Z 0.000 g");
+    lv_obj_align(lbl_axyz, LV_ALIGN_TOP_LEFT, 73, 327);
 
-    lbl_gxyz = lv_label_create(footer);
+    lbl_gxyz = lv_label_create(root);
     lv_label_set_text(lbl_gxyz, "Gyro:  X 0.0  Y 0.0  Z 0.0 dps");
+    lv_obj_align(lbl_gxyz, LV_ALIGN_TOP_LEFT, 73, 347);
 
-    lbl_angles = lv_label_create(footer);
+    lbl_angles = lv_label_create(root);
     lv_label_set_text(lbl_angles, "Pitch 0.0°  Roll 0.0°");
+    lv_obj_align(lbl_angles, LV_ALIGN_TOP_LEFT, 73, 367);
 
     // UI refresh timer
     lv_timer_create(
