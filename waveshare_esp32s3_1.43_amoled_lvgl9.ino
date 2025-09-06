@@ -5,7 +5,7 @@
 #define LV_CONF_INCLUDE_SIMPLE
 
 // Comment the next line if you want to use your own design (ex. from Squareline studio)
-// #define USE_BUILT_IN_EXAMPLE
+#define USE_BUILT_IN_EXAMPLE
 
 #include <lvgl.h> // Install "lvgl" with the Library Manager (last tested on v9.2.2)
 #include "amoled.h"
@@ -60,6 +60,9 @@ void setup()
     // Initialize the touch screen
     Touch_Init();
 
+    qmi8658_init();
+    delay(1000); // This delay is required, do not remove it
+
     // Display initialization
     if (!amoled.begin())
     {
@@ -108,14 +111,13 @@ void setup()
     lv_log_register_print_cb(my_print);
 #endif
 
+#ifdef USE_BUILT_IN_EXAMPLE
+    // Launch the UI example
+    imu_ui_create();
+#else
     // If you want to use a UI created with Squarline Studio, call it here
     // ex.: ui_init();
     ui_init();
-#ifdef USE_BUILT_IN_EXAMPLE
-    // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
-    xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
-    // Launch the UI example
-    imu_ui_create();
 #endif
 }
 
@@ -123,30 +125,6 @@ void loop()
 {
     lv_timer_handler(); /* let LVGL do its GUI work */
     delay(5);
-}
-
-// Task to read the values of QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
-static void imu_task(void *arg)
-{
-    qmi8658_init();
-    vTaskDelay(pdMS_TO_TICKS(1000));
-
-    for (;;)
-    {
-        float acc[3], gyro[3];
-        float temp = 0;
-        qmi8658_read_xyz(acc, gyro);
-        temp = qmi8658_readTemp();
-        g_imu.ax = acc[0];
-        g_imu.ay = acc[1];
-        g_imu.az = acc[2];
-        g_imu.gx = gyro[0];
-        g_imu.gy = gyro[1];
-        g_imu.gz = gyro[2];
-        g_imu.temp = temp;
-
-        vTaskDelay(pdMS_TO_TICKS(100)); // 100 Hz sampling (adjust as you like)
-    }
 }
 
 // LVGL calls this function to read the touchpad
@@ -221,38 +199,6 @@ static void compute_pitch_roll_from_accel(float ax, float ay, float az, float *p
     // regardless of whether az is positive or negative.
     float s = (az >= 0.0f) ? 1.0f : -1.0f;
     *roll_deg = RAD2DEG(atan2f(ay * s, az * s));
-}
-
-// LVGL will call this function to update the UI with the latest sample read the accelerometer and gyroscope (QMI8658)
-static void ui_tick_cb(lv_timer_t *t)
-{
-    LV_UNUSED(t);
-    const float ax = g_imu.ax, ay = g_imu.ay, az = g_imu.az;
-    const float gx = g_imu.gx, gy = g_imu.gy, gz = g_imu.gz;
-    const float temp = g_imu.temp;
-
-    lv_chart_set_next_value(chart, ser_ax, (int32_t)(ax * 1000.0f));
-    lv_chart_set_next_value(chart, ser_ay, (int32_t)(ay * 1000.0f));
-    lv_chart_set_next_value(chart, ser_az, (int32_t)(az * 1000.0f));
-
-    float pitch_deg, roll_deg;
-    compute_pitch_roll_from_accel(ax, ay, az, &pitch_deg, &roll_deg);
-    if (pitch_deg < -90)
-        pitch_deg = -90;
-    if (pitch_deg > 90)
-        pitch_deg = 90;
-    // Allow full range for roll
-    if (roll_deg < -180)
-        roll_deg = -180;
-    if (roll_deg > 180)
-        roll_deg = 180;
-
-    lv_arc_set_value(arc_roll, (int32_t)roll_deg);
-    lv_arc_set_value(arc_pitch, (int32_t)pitch_deg);
-
-    lv_label_set_text_fmt(lbl_axyz, "Accel: X %.3f  Y %.3f  Z %.3f g", ax, ay, az);
-    lv_label_set_text_fmt(lbl_gxyz, "Gyro:  X %.1f  Y %.1f  Z %.1f dps", gx, gy, gz);
-    lv_label_set_text_fmt(lbl_angles, "Pitch %.1f°  Roll %.1f°  T %.1fC", pitch_deg, roll_deg, temp);
 }
 
 // ---------- Optional smoothing (keeps UI calm) ----------
@@ -392,6 +338,17 @@ void imu_ui_create(void)
     lv_timer_create(
         [](lv_timer_t *t)
         {
+            float acc[3], gyro[3];
+            float temp_read = 0;
+            qmi8658_read_xyz(acc, gyro);
+            temp_read = qmi8658_readTemp();
+            g_imu.ax = acc[0];
+            g_imu.ay = acc[1];
+            g_imu.az = acc[2];
+            g_imu.gx = gyro[0];
+            g_imu.gy = gyro[1];
+            g_imu.gz = gyro[2];
+            g_imu.temp = temp_read;
             LV_UNUSED(t);
             // (Optional) smooth values a bit for the arcs
             static float sm_ax = 0, sm_ay = 0, sm_az = 0;
