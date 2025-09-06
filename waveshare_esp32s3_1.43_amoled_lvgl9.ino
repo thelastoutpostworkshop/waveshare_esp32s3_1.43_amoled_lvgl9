@@ -5,12 +5,14 @@
 #define LV_CONF_INCLUDE_SIMPLE 
 
 // Comment the next line if you want to use your own design (ex. from Squareline studio)
-#define USE_BUILT_IN_EXAMPLE
+// #define USE_BUILT_IN_EXAMPLE
 
 #include <lvgl.h> // Install "lvgl" with the Library Manager (last tested on v9.2.2)
 #include "amoled.h"
 #include "FT3168.h" // Capacitive Touch functions
 #include "qmi8658c.h"
+
+#include "ui.h"
 
 Amoled amoled; // Main object for the display board
 
@@ -93,6 +95,7 @@ void setup()
     disp = lv_display_create(DISPLAY_WIDTH, DISPLAY_HEIGHT);
     lv_display_set_flush_cb(disp, my_disp_flush);
     lv_display_set_buffers(disp, lvgl_buf1, lvgl_buf2, LVGL_DRAW_BUF_SIZE, LV_DISPLAY_RENDER_MODE_PARTIAL);
+    lv_display_add_event_cb(disp, rounder_event_cb, LV_EVENT_INVALIDATE_AREA, NULL);
 
     // Create the LVGL input touchpad device
     lv_indev_t *indev = lv_indev_create();
@@ -106,6 +109,7 @@ void setup()
 
 // If you want to use a UI created with Squarline Studio, call it here
 // ex.: ui_init();
+ui_init();
 #ifdef USE_BUILT_IN_EXAMPLE
     // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
     xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
