@@ -5,7 +5,7 @@
 #define LV_CONF_INCLUDE_SIMPLE
 
 // Comment the next line if you want to use your own design (ex. from Squareline studio)
-// #define USE_BUILT_IN_EXAMPLE
+#define USE_BUILT_IN_EXAMPLE
 
 #include <lvgl.h> // Install "lvgl" with the Library Manager (last tested on v9.2.2)
 #include "amoled.h"
@@ -108,14 +108,15 @@ void setup()
     lv_log_register_print_cb(my_print);
 #endif
 
-    // If you want to use a UI created with Squarline Studio, call it here
-    // ex.: ui_init();
-    ui_init();
 #ifdef USE_BUILT_IN_EXAMPLE
     // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
     xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
     // Launch the UI example
     imu_ui_create();
+#else
+    // If you want to use a UI created with Squarline Studio, call it here
+    // ex.: ui_init();
+    ui_init();
 #endif
 }
 
@@ -221,38 +222,6 @@ static void compute_pitch_roll_from_accel(float ax, float ay, float az, float *p
     // regardless of whether az is positive or negative.
     float s = (az >= 0.0f) ? 1.0f : -1.0f;
     *roll_deg = RAD2DEG(atan2f(ay * s, az * s));
-}
-
-// LVGL will call this function to update the UI with the latest sample read the accelerometer and gyroscope (QMI8658)
-static void ui_tick_cb(lv_timer_t *t)
-{
-    LV_UNUSED(t);
-    const float ax = g_imu.ax, ay = g_imu.ay, az = g_imu.az;
-    const float gx = g_imu.gx, gy = g_imu.gy, gz = g_imu.gz;
-    const float temp = g_imu.temp;
-
-    lv_chart_set_next_value(chart, ser_ax, (int32_t)(ax * 1000.0f));
-    lv_chart_set_next_value(chart, ser_ay, (int32_t)(ay * 1000.0f));
-    lv_chart_set_next_value(chart, ser_az, (int32_t)(az * 1000.0f));
-
-    float pitch_deg, roll_deg;
-    compute_pitch_roll_from_accel(ax, ay, az, &pitch_deg, &roll_deg);
-    if (pitch_deg < -90)
-        pitch_deg = -90;
-    if (pitch_deg > 90)
-        pitch_deg = 90;
-    // Allow full range for roll
-    if (roll_deg < -180)
-        roll_deg = -180;
-    if (roll_deg > 180)
-        roll_deg = 180;
-
-    lv_arc_set_value(arc_roll, (int32_t)roll_deg);
-    lv_arc_set_value(arc_pitch, (int32_t)pitch_deg);
-
-    lv_label_set_text_fmt(lbl_axyz, "Accel: X %.3f  Y %.3f  Z %.3f g", ax, ay, az);
-    lv_label_set_text_fmt(lbl_gxyz, "Gyro:  X %.1f  Y %.1f  Z %.1f dps", gx, gy, gz);
-    lv_label_set_text_fmt(lbl_angles, "Pitch %.1f°  Roll %.1f°  T %.1fC", pitch_deg, roll_deg, temp);
 }
 
 // ---------- Optional smoothing (keeps UI calm) ----------
