@@ -48,13 +48,16 @@ void setup()
     delay(4000);
 
     // Initialize the touch screen
+    Serial.println("Touche screen initialization");
     Touch_Init();
-
+    
     // Initialize QMI8658 6-axis IMU
+    Serial.println("QMI8658 6-axis IMU initialization");
     qmi8658_init();
     delay(1000); // Do not change this delay, it is required by the QMI8658
-
+    
     // Display initialization
+    Serial.println("Amoled display initialization");
     if (!amoled.begin())
     {
         Serial.println("Display initialization failed!");
@@ -63,12 +66,14 @@ void setup()
             /* no need to continue */
         }
     }
-
+    
     // LVGL initialization
+    Serial.println("LVGL initialization");
     lv_init();
     lv_tick_set_cb(millis_cb);
-
+    
     // LVGL Buffers allocation for the display
+    Serial.println("LVGL buffers allocation");
     lvgl_buf1 = (lv_color_t *)heap_caps_malloc(LVGL_DRAW_BUF_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     if (!lvgl_buf1)
     {
