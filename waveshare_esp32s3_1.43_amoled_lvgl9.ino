@@ -8,10 +8,10 @@
 // Comment the next line if you want to use your own design (ex. from Squareline studio)
 #define USE_BUILT_IN_SURFACE_LEVEL_EXAMPLE
 
-#include <lvgl.h>       // Install "lvgl" with the Library Manager (last tested on v9.2.2)
+#include <lvgl.h> // Install "lvgl" with the Library Manager (last tested on v9.2.2)
 #include "amoled.h"
-#include "FT3168.h"     // Capacitive Touch functions
-#include "qmi8658c.h"   // QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope) functions
+#include "FT3168.h"   // Capacitive Touch functions
+#include "qmi8658c.h" // QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope) functions
 #include "ui.h"
 
 Amoled amoled; // Main object for the display board
@@ -36,8 +36,9 @@ typedef struct
 } ImuData;
 volatile ImuData g_imu;
 
-extern lv_obj_t *uic_bubble; // The bubble to move on the screen to show the level
-
+extern lv_obj_t *uic_bubble;  // The bubble to move on the screen to show the level
+extern lv_obj_t *uic_Label_x; // Label for the y position of the bubble
+extern lv_obj_t *uic_Label_y; // Label for the x position of the bubble
 #endif
 
 void setup()
@@ -50,12 +51,12 @@ void setup()
     // Initialize the touch screen
     Serial.println("Touche screen initialization");
     Touch_Init();
-    
+
     // Initialize QMI8658 6-axis IMU
     Serial.println("QMI8658 6-axis IMU initialization");
     qmi8658_init();
     delay(1000); // Do not change this delay, it is required by the QMI8658
-    
+
     // Display initialization
     Serial.println("Amoled display initialization");
     if (!amoled.begin())
@@ -66,12 +67,12 @@ void setup()
             /* no need to continue */
         }
     }
-    
+
     // LVGL initialization
     Serial.println("LVGL initialization");
     lv_init();
     lv_tick_set_cb(millis_cb);
-    
+
     // LVGL Buffers allocation for the display
     Serial.println("LVGL buffers allocation");
     lvgl_buf1 = (lv_color_t *)heap_caps_malloc(LVGL_DRAW_BUF_SIZE, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
@@ -296,6 +297,8 @@ void move_bubble(lv_timer_t *timer)
     // Position the bubble with its center at (cx+dx, cy+dy)
     int x = (int)lrintf((float)cx + dx - bw / 2.0f);
     int y = (int)lrintf((float)cy + dy - bh / 2.0f);
+    lv_label_set_text_fmt(uic_Label_x, "%.1f°", used_roll);
+    lv_label_set_text_fmt(uic_Label_y, "%.1f°", used_pitch);
     // Serial.printf("Bubble x=%d,y=%d\n",x,y);
     lv_obj_set_pos(uic_bubble, x, y);
 }
