@@ -10,8 +10,8 @@
 
 #include <lvgl.h> // Install "lvgl" with the Library Manager (last tested on v9.2.2)
 #include "amoled.h"
-#include "FT3168.h" // Capacitive Touch functions
-#include "qmi8658c.h"
+#include "FT3168.h"     // Capacitive Touch functions
+#include "qmi8658c.h"   // QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope) functions
 #include "ui.h"
 
 Amoled amoled; // Main object for the display board
@@ -49,6 +49,10 @@ void setup()
 
     // Initialize the touch screen
     Touch_Init();
+
+    // Initialize QMI8658 6-axis IMU
+    qmi8658_init();
+    delay(1000); // Do not change this delay, it is required by the QMI8658
 
     // Display initialization
     if (!amoled.begin())
@@ -117,7 +121,6 @@ void loop()
     delay(5);
 }
 
-
 // LVGL calls this function to read the touchpad
 void lvgl_touchpad_read(lv_indev_t *indev, lv_indev_data_t *data)
 {
@@ -181,9 +184,6 @@ static void rounder_event_cb(lv_event_t *e)
 // Task to read the values of QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
 static void imu_task(void *arg)
 {
-    qmi8658_init();
-    vTaskDelay(pdMS_TO_TICKS(1000)); // Do not change this delay, it is required by the QMI8658
-
     for (;;)
     {
         float acc[3], gyro[3];
