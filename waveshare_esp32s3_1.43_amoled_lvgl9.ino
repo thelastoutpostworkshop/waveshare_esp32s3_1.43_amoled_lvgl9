@@ -119,6 +119,9 @@ xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
     // ex.: ui_init();
     ui_init();
 #endif
+
+    // Periodic timer to update/move the bubble image using latest IMU data
+    lv_timer_create(bubble_timer, 50, NULL); // ~20 Hz
 }
 
 void loop()
@@ -207,6 +210,78 @@ static void rounder_event_cb(lv_event_t *e)
             area->y2 = (area->y2) | 1;  // Round up to odd
         }
     }
+}
+
+// Periodic LVGL timer to move the bubble image based on latest IMU data
+void bubble_timer(lv_timer_t *timer)
+{
+    LV_UNUSED(timer);
+    if (!uic_bubble)
+        return; // UI not ready yet
+
+    // Ensure our manual positioning takes effect and object is visible/foreground
+    static bool bubble_prepared = false;
+    if (!bubble_prepared)
+    {
+        lv_obj_set_align(uic_bubble, LV_ALIGN_TOP_LEFT);
+        lv_obj_clear_flag(uic_bubble, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_move_foreground(uic_bubble);
+        bubble_prepared = true;
+    }
+
+    // Smooth IMU a bit to keep motion calm
+    static float sm_ax = 0.0f, sm_ay = 0.0f, sm_az = 0.0f;
+    sm_ax = sm_ax + 0.2f * (g_imu.ax - sm_ax);
+    sm_ay = sm_ay + 0.2f * (g_imu.ay - sm_ay);
+    sm_az = sm_az + 0.2f * (g_imu.az - sm_az);
+
+    // Compute pitch/roll from accel only
+    float pitch_deg = (180.0f / 3.1415926f) * atan2f(-sm_ax, sqrtf(sm_ay * sm_ay + sm_az * sm_az));
+    float s = (sm_az >= 0.0f) ? 1.0f : -1.0f; // normalize so flat => 0 roll
+    float roll_deg = (180.0f / 3.1415926f) * atan2f(sm_ay * s, sm_az * s);
+    if (pitch_deg < -90) pitch_deg = -90; if (pitch_deg > 90) pitch_deg = 90;
+    if (roll_deg < -180) roll_deg = -180; if (roll_deg > 180) roll_deg = 180;
+
+    // Find parent center
+    lv_obj_t *parent = lv_obj_get_parent(uic_bubble);
+    int pw = lv_obj_get_width(parent);
+    int ph = lv_obj_get_height(parent);
+    if (pw <= 0 || ph <= 0)
+    {
+        // Fallback to display resolution if parent not sized yet
+        lv_display_t *d = lv_display_get_default();
+        pw = lv_display_get_horizontal_resolution(d);
+        ph = lv_display_get_vertical_resolution(d);
+    }
+    int cx = pw / 2;
+    int cy = ph / 2;
+
+    // Bubble size
+    int bw = lv_obj_get_width(uic_bubble);
+    int bh = lv_obj_get_height(uic_bubble);
+    int br = (bw > bh ? bw : bh) / 2; // approx radius
+
+    // Choose a radius that keeps bubble inside the dial (leave small margin)
+    int r_max = (pw < ph ? pw : ph) / 2 - br - 10; // 10 px margin from ring
+    if (r_max < 0) r_max = 0;
+
+    // Pixels per degree so that ~45° reaches near the ring
+    float px_per_deg = r_max / 45.0f;
+
+    float dx = roll_deg * px_per_deg;
+    float dy = -pitch_deg * px_per_deg;
+    float rr = sqrtf(dx * dx + dy * dy);
+    if (rr > r_max && rr > 0.0f)
+    {
+        float k = (float)r_max / rr;
+        dx *= k; dy *= k;
+    }
+
+    // Position the bubble with its center at (cx+dx, cy+dy)
+    int x = (int)lrintf((float)cx + dx - bw / 2.0f);
+    int y = (int)lrintf((float)cy + dy - bh / 2.0f);
+    Serial.printf("Bubble x=%d,y=%d\n",x,y);
+    lv_obj_set_pos(uic_bubble, x, y);
 }
 
 #ifdef USE_BUILT_IN_EXAMPLE
