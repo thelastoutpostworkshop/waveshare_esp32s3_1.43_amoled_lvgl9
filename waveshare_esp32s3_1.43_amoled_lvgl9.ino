@@ -6,7 +6,7 @@
 #define LV_CONF_INCLUDE_SIMPLE
 
 // Comment the next line if you want to use your own design (ex. from Squareline studio)
-#define USE_BUILT_IN_EXAMPLE
+#define USE_BUILT_IN_SURFACE_LEVEL_EXAMPLE
 
 #include <lvgl.h> // Install "lvgl" with the Library Manager (last tested on v9.2.2)
 #include "amoled.h"
@@ -24,7 +24,7 @@ lv_display_t *disp;
 lv_color_t *lvgl_buf1 = nullptr;
 lv_color_t *lvgl_buf2 = nullptr;
 
-#ifdef USE_BUILT_IN_EXAMPLE
+#ifdef USE_BUILT_IN_SURFACE_LEVEL_EXAMPLE
 // Globals variable for the example
 
 // Global to store the latest sample read the accelerometer and gyroscope (QMI8658)
@@ -98,7 +98,7 @@ void setup()
     lv_log_register_print_cb(my_print);
 #endif
 
-#ifdef USE_BUILT_IN_EXAMPLE
+#ifdef USE_BUILT_IN_SURFACE_LEVEL_EXAMPLE
     // Launch the UI example
     ui_init();
     // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
@@ -117,29 +117,6 @@ void loop()
     delay(5);
 }
 
-// Task to read the values of QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
-static void imu_task(void *arg)
-{
-    qmi8658_init();
-    vTaskDelay(pdMS_TO_TICKS(1000)); // Do not change this delay, it is required by the QMI8658
-
-    for (;;)
-    {
-        float acc[3], gyro[3];
-        float temp = 0;
-        qmi8658_read_xyz(acc, gyro);
-        temp = qmi8658_readTemp();
-        g_imu.ax = acc[0];
-        g_imu.ay = acc[1];
-        g_imu.az = acc[2];
-        g_imu.gx = gyro[0];
-        g_imu.gy = gyro[1];
-        g_imu.gz = gyro[2];
-        g_imu.temp = temp;
-
-        vTaskDelay(pdMS_TO_TICKS(100)); // 100 Hz sampling (adjust as you like)
-    }
-}
 
 // LVGL calls this function to read the touchpad
 void lvgl_touchpad_read(lv_indev_t *indev, lv_indev_data_t *data)
@@ -199,7 +176,32 @@ static void rounder_event_cb(lv_event_t *e)
     }
 }
 
-#ifdef USE_BUILT_IN_EXAMPLE
+#ifdef USE_BUILT_IN_SURFACE_LEVEL_EXAMPLE
+
+// Task to read the values of QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
+static void imu_task(void *arg)
+{
+    qmi8658_init();
+    vTaskDelay(pdMS_TO_TICKS(1000)); // Do not change this delay, it is required by the QMI8658
+
+    for (;;)
+    {
+        float acc[3], gyro[3];
+        float temp = 0;
+        qmi8658_read_xyz(acc, gyro);
+        temp = qmi8658_readTemp();
+        g_imu.ax = acc[0];
+        g_imu.ay = acc[1];
+        g_imu.az = acc[2];
+        g_imu.gx = gyro[0];
+        g_imu.gy = gyro[1];
+        g_imu.gz = gyro[2];
+        g_imu.temp = temp;
+
+        vTaskDelay(pdMS_TO_TICKS(100)); // 100 ms sampling (adjust as you like)
+    }
+}
+
 // Periodic LVGL timer to move the bubble image based on latest IMU data
 void move_bubble(lv_timer_t *timer)
 {
