@@ -26,7 +26,7 @@ lv_color_t *lvgl_buf2 = nullptr;
 
 #ifdef USE_BUILT_IN_SURFACE_LEVEL_EXAMPLE
 // Globals for the surface level example
-#define TARGET_THRESHOLD_PX 20 // Target threshold in pixels when the bubble is almost level
+#define TARGET_THRESHOLD_PX 20 // Target threshold in pixels when the bubble is almost level (turn the target red)
 
 // Global to store the latest sample read the accelerometer and gyroscope (QMI8658)
 typedef struct
