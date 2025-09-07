@@ -115,7 +115,7 @@ void setup()
     // Launch the UI example
     ui_init();
     // Create the task to read QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
-    xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 1);
+    xTaskCreatePinnedToCore(imu_task, "imu", 4096, NULL, 2, NULL, 0);
     // Periodic timer to update/move the bubble image using latest IMU data
     lv_timer_create(move_bubble, 50, NULL); // ~20 Hz
 #else
