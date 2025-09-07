@@ -30,6 +30,7 @@ extern "C" {
 ///////////////////// SCREENS ////////////////////
 
 #include "ui_Screen1.h"
+#include "ui_Screen2.h"
 
 ///////////////////// VARIABLES ////////////////////
 
@@ -43,6 +44,7 @@ LV_IMG_DECLARE(ui_img_surface_level_png);    // assets/surface_level.png
 LV_IMG_DECLARE(ui_img_bubble_png);    // assets/bubble.png
 LV_IMG_DECLARE(ui_img_target_off_png);    // assets/target_off.png
 LV_IMG_DECLARE(ui_img_target_on_png);    // assets/target_on.png
+LV_IMG_DECLARE(ui_img_makers_png);    // assets/makers.png
 
 // UI INIT
 void ui_init(void);

@@ -48,7 +48,7 @@ void setup()
 {
     Serial.begin(115200);
 
-    // Optional: Give time to the serial port to show initial messages printed on the serial port upon reset
+    // Optional: Give time to the serial port to show initial messages printed on the serial monitor upon reset
     delay(4000);
 
     // Initialize the touch screen

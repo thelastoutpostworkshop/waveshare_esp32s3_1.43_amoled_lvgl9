@@ -24,6 +24,15 @@ lv_obj_t * ui_Label5 = NULL;
 lv_obj_t * ui_Image4 = NULL;
 lv_obj_t * ui_Image5 = NULL;
 // event funtions
+void ui_event_Screen1(lv_event_t * e)
+{
+    lv_event_code_t event_code = lv_event_get_code(e);
+
+    if(event_code == LV_EVENT_GESTURE &&  lv_indev_get_gesture_dir(lv_indev_active()) == LV_DIR_TOP) {
+        lv_indev_wait_release(lv_indev_active());
+        _ui_screen_change(&ui_Screen2, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &ui_Screen2_screen_init);
+    }
+}
 
 // build funtions
 
@@ -39,8 +48,8 @@ void ui_Screen1_screen_init(void)
     lv_obj_set_x(ui_Image3, 3);
     lv_obj_set_y(ui_Image3, 15);
     lv_obj_set_align(ui_Image3, LV_ALIGN_CENTER);
-    lv_obj_remove_flag(ui_Image3, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
-                       LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE);     /// Flags
+    lv_obj_add_flag(ui_Image3, LV_OBJ_FLAG_CLICKABLE);     /// Flags
+    lv_obj_remove_flag(ui_Image3, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
     lv_image_set_scale(ui_Image3, 350);
 
     ui_Image2 = lv_image_create(ui_Screen1);
@@ -126,6 +135,7 @@ void ui_Screen1_screen_init(void)
     lv_obj_remove_flag(ui_Image5, LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
                        LV_OBJ_FLAG_SNAPPABLE | LV_OBJ_FLAG_SCROLLABLE);     /// Flags
 
+    lv_obj_add_event_cb(ui_Screen1, ui_event_Screen1, LV_EVENT_ALL, NULL);
     uic_Screen1 = ui_Screen1;
     uic_bubble = ui_Image2;
     uic_x = ui_Label2;
