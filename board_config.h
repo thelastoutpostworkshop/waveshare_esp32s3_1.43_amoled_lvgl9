@@ -1,3 +1,5 @@
+// Waveshare ESP32-S3-Touch-AMOLED-1.43 Board configuration
+
 #ifndef BOARD_CONFIG_H
 #define BOARD_CONFIG_H
 
@@ -5,7 +7,7 @@
 #define SH8601_ID 0x86
 #define CO5300_ID 0xff
 
-#define CO5300_NAME "CO5300"
+#define CO5300_NAME "CO5300"    // Tested with this display controller typ
 #define SH8601_NAME "SH8601"
 
 // Display config
