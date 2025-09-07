@@ -192,6 +192,7 @@ static void rounder_event_cb(lv_event_t *e)
 }
 
 #ifdef USE_BUILT_IN_SURFACE_LEVEL_EXAMPLE
+// Below are all the functions need by the Surface Level example
 
 // Task to read the values of QMI8658 6-axis IMU (3-axis accelerometer and 3-axis gyroscope)
 static void imu_task(void *arg)
