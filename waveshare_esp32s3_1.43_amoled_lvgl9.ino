@@ -27,6 +27,7 @@ lv_color_t *lvgl_buf2 = nullptr;
 #ifdef USE_BUILT_IN_SURFACE_LEVEL_EXAMPLE
 // Globals for the surface level example
 #define TARGET_THRESHOLD_PX 20 // Target threshold in pixels when the bubble is almost level (turn the target red)
+#define READ_SAMPLE_INTERVAL_MS 100 // Interval in ms to read a sample from the QMI8658
 
 // Global to store the latest sample read the accelerometer and gyroscope (QMI8658)
 typedef struct
@@ -207,7 +208,7 @@ static void imu_task(void *arg)
         g_imu.gz = gyro[2];
         g_imu.temp = temp;
 
-        vTaskDelay(pdMS_TO_TICKS(100)); // 100 ms sampling (adjust as you like)
+        vTaskDelay(pdMS_TO_TICKS(READ_SAMPLE_INTERVAL_MS));
     }
 }
 
