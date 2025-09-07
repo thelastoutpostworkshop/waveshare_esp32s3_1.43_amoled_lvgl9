@@ -1,3 +1,4 @@
+// Waveshare ESP32-S3-Touch-AMOLED-1.43 Surface Level (LVGL9)
 // Tutorial :
 // Use board "Waveshare ESP32-S3-Touch-AMOLED-1.43" (last tested on v3.3.0)
 
@@ -5,7 +6,7 @@
 // Keep it this way, everything is configured correctly
 #define LV_CONF_INCLUDE_SIMPLE
 
-// Comment the next line if you want to use your own design (ex. from Squareline studio)
+// Comment the next line if you want to use your own design (ex. from Squareline studio) and disable the Surface Level Example 
 #define USE_BUILT_IN_SURFACE_LEVEL_EXAMPLE
 
 #include <lvgl.h> // Install "lvgl" with the Library Manager (last tested on v9.2.2)
