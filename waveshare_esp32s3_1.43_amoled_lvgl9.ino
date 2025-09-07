@@ -73,6 +73,7 @@ void setup()
             /* no need to continue */
         }
     }
+    Serial.printf("Display controller name is %s (id=%d)\n", amoled.name(), amoled.ID());
 
     // LVGL initialization
     Serial.println("LVGL initialization");
