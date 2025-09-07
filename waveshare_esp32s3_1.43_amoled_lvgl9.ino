@@ -27,8 +27,8 @@ lv_color_t *lvgl_buf2 = nullptr;
 #ifdef USE_BUILT_IN_SURFACE_LEVEL_EXAMPLE
 // Globals for the surface level example
 #define TARGET_THRESHOLD_PX 20 // Target threshold in pixels when the bubble is almost level (turn the target red)
-#define READ_SAMPLE_INTERVAL_MS 100     // Interval in ms to read a sample from the QMI8658
-#define MOVE_BUBBLE_INTERVAL_MS 50      // Interval in ms to adjust bubble movement in the UI
+#define READ_SAMPLE_INTERVAL_MS 50     // Interval in ms to read a sample from the QMI8658
+#define MOVE_BUBBLE_INTERVAL_MS 100     // Interval in ms to adjust bubble movement in the UI
 
 // Global to store the latest sample read the accelerometer and gyroscope (QMI8658)
 typedef struct
