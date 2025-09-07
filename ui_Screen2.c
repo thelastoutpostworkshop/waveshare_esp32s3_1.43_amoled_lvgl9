@@ -7,6 +7,7 @@
 
 lv_obj_t * ui_Screen2 = NULL;
 lv_obj_t * ui_Image6 = NULL;
+lv_obj_t * ui_Label6 = NULL;
 // event funtions
 void ui_event_Screen2(lv_event_t * e)
 {
@@ -35,6 +36,16 @@ void ui_Screen2_screen_init(void)
     lv_obj_add_flag(ui_Image6, LV_OBJ_FLAG_CLICKABLE);     /// Flags
     lv_obj_remove_flag(ui_Image6, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
+    ui_Label6 = lv_label_create(ui_Screen2);
+    lv_obj_set_width(ui_Label6, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Label6, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Label6, -3);
+    lv_obj_set_y(ui_Label6, 156);
+    lv_obj_set_align(ui_Label6, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_Label6, "The Last Outpost Workshop");
+    lv_obj_set_style_text_align(ui_Label6, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_Label6, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+
     lv_obj_add_event_cb(ui_Screen2, ui_event_Screen2, LV_EVENT_ALL, NULL);
 
 }
@@ -46,5 +57,6 @@ void ui_Screen2_screen_destroy(void)
     // NULL screen variables
     ui_Screen2 = NULL;
     ui_Image6 = NULL;
+    ui_Label6 = NULL;
 
 }
