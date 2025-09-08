@@ -14,6 +14,8 @@
 extern "C" {
 #endif
 
+uint8_t read_lcd_id(void);
+
 /**
  * @brief LCD panel initialization commands.
  *

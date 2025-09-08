@@ -3,8 +3,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
 */
+#include "low_level_amoled.h"
+#include "board_config.h"
+
 #include <stdlib.h>
 #include <sys/cdefs.h>
+#include <stdio.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -16,8 +20,7 @@
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_commands.h"
 #include "esp_log.h"
-
-#include "low_level_amoled.h"
+#include "esp_rom_sys.h"
 
 #define LCD_OPCODE_WRITE_CMD        (0x02ULL)
 #define LCD_OPCODE_READ_CMD         (0x03ULL)
@@ -343,4 +346,159 @@ static esp_err_t amoled_disp_on_off(esp_lcd_panel_t *lcd_panel, bool on_off)
     }
     ESP_RETURN_ON_ERROR(tx_param(panel, io, command, NULL, 0), TAG, "send command failed");
     return ESP_OK;
+}
+
+#define bit_mask (uint64_t)0x01
+
+#define lcd_cs_1 gpio_set_level(PIN_NUM_LCD_CS,1)
+#define lcd_cs_0 gpio_set_level(PIN_NUM_LCD_CS,0)
+#define lcd_clk_1 gpio_set_level(PIN_NUM_LCD_PCLK,1)
+#define lcd_clk_0 gpio_set_level(PIN_NUM_LCD_PCLK,0)
+#define lcd_d0_1 gpio_set_level(PIN_NUM_LCD_DATA0,1)
+#define lcd_d0_0 gpio_set_level(PIN_NUM_LCD_DATA0,0)
+#define lcd_d1_1 gpio_set_level(PIN_NUM_LCD_DATA1,1)
+#define lcd_d1_0 gpio_set_level(PIN_NUM_LCD_DATA1,0)
+#define lcd_d2_1 gpio_set_level(PIN_NUM_LCD_DATA2,1)
+#define lcd_d2_0 gpio_set_level(PIN_NUM_LCD_DATA2,0)
+#define lcd_d3_1 gpio_set_level(PIN_NUM_LCD_DATA3,1)
+#define lcd_d3_0 gpio_set_level(PIN_NUM_LCD_DATA3,0)
+#define lcd_rst_1 gpio_set_level(PIN_NUM_LCD_RST,1)
+#define lcd_rst_0 gpio_set_level(PIN_NUM_LCD_RST,0)
+#define read_d0 gpio_get_level(PIN_NUM_LCD_DATA0)
+
+void lcd_gpio_init(void)
+{
+  gpio_config_t gpio_conf = {};
+  gpio_conf.intr_type = GPIO_INTR_DISABLE;
+  gpio_conf.mode = GPIO_MODE_OUTPUT;
+  gpio_conf.pin_bit_mask = (bit_mask<<PIN_NUM_LCD_CS) | (bit_mask<<PIN_NUM_LCD_PCLK) | (bit_mask<<PIN_NUM_LCD_DATA0) \
+  | (bit_mask<<PIN_NUM_LCD_DATA1) | (bit_mask<<PIN_NUM_LCD_DATA2) | (bit_mask<<PIN_NUM_LCD_DATA3) | (bit_mask<<PIN_NUM_LCD_RST);
+  gpio_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+  gpio_conf.pull_up_en = GPIO_PULLUP_ENABLE;
+
+  ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_config(&gpio_conf)); //ESP32 onboard GPIO
+}
+void sda_read_mode(void)
+{
+  gpio_config_t gpio_conf = {};
+  gpio_conf.intr_type = GPIO_INTR_DISABLE;
+  gpio_conf.mode = GPIO_MODE_INPUT;
+  gpio_conf.pin_bit_mask = (bit_mask<<PIN_NUM_LCD_DATA0);
+  gpio_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+  gpio_conf.pull_up_en = GPIO_PULLUP_ENABLE;
+
+  ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_config(&gpio_conf)); //ESP32 onboard GPIO
+}
+void sda_write_mode(void)
+{
+  gpio_config_t gpio_conf = {};
+  gpio_conf.intr_type = GPIO_INTR_DISABLE;
+  gpio_conf.mode = GPIO_MODE_OUTPUT;
+  gpio_conf.pin_bit_mask = (bit_mask<<PIN_NUM_LCD_DATA0);
+  gpio_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+  gpio_conf.pull_up_en = GPIO_PULLUP_ENABLE;
+
+  ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_config(&gpio_conf)); //ESP32 onboard GPIO
+}
+void delay_us(uint32_t us)
+{
+  esp_rom_delay_us(us);
+}
+//SPI write data
+void  SPI_1L_SendData(uint8_t dat)
+{  
+  uint8_t i;
+  for(i=0; i<8; i++)			
+  {   
+    if( (dat&0x80)!=0 ) lcd_d0_1;
+    else                lcd_d0_0;
+    dat  <<= 1;
+	  lcd_clk_0;//delay_us(2);
+	  lcd_clk_1; 
+  }
+}
+void WriteComm(uint8_t regval)
+{ 
+	lcd_cs_0;
+  lcd_d0_0;
+  lcd_clk_0;
+
+  lcd_d0_0;
+  lcd_clk_0;
+  lcd_clk_1;
+  SPI_1L_SendData(regval);
+  lcd_cs_1;
+}
+void WriteData(uint8_t val)
+{   
+  lcd_cs_0;
+  lcd_d0_0;
+  lcd_clk_0;
+
+  lcd_d0_1;
+  lcd_clk_0;
+  lcd_clk_1;
+  SPI_1L_SendData(val);
+  lcd_cs_1;
+}
+void SPI_WriteComm(uint8_t regval)
+{ 
+	SPI_1L_SendData(0x02);
+	SPI_1L_SendData(0x00);
+	SPI_1L_SendData(regval);
+	SPI_1L_SendData(0x00);//delay_us(2);
+}
+
+void SPI_ReadComm(uint8_t regval)
+{    
+	SPI_1L_SendData(0x03);//
+	SPI_1L_SendData(0x00);
+	SPI_1L_SendData(regval);
+	SPI_1L_SendData(0x00);//PAM
+}
+
+uint8_t SPI_ReadData(void)
+{
+	uint8_t i=0,dat=0;
+  for(i=0; i<8; i++)			
+  { 
+    lcd_clk_0;
+    sda_read_mode();//Before reading the returned data, set it to input mode
+    dat=(dat<<1)| read_d0;
+    sda_write_mode();//After reading the returned data, set it to output mode
+    lcd_clk_1;
+    delay_us(1);//necessary delay
+  }
+  // Write_Mode();//After reading the returned data, set it to output mode
+	return dat;	 
+}
+uint8_t SPI_ReadData_Continue(void)
+{
+	uint8_t i=0,dat=0;
+  for(i=0; i<8; i++)			
+  {  
+    lcd_clk_0;
+    sda_read_mode();//Before reading the returned data, set it to input mode
+    delay_us(1);//necessary delay
+    dat=(dat<<1)|read_d0; 
+    sda_write_mode();//After reading the returned data, set it to output mode
+    lcd_clk_1;
+    delay_us(1);//necessary delay
+  }
+	return dat;	 
+}
+
+uint8_t read_lcd_id(void)
+{
+  lcd_gpio_init();
+  lcd_rst_1;
+  vTaskDelay(pdMS_TO_TICKS(120));
+  lcd_rst_0;
+  vTaskDelay(pdMS_TO_TICKS(120));
+  lcd_rst_1;
+  vTaskDelay(pdMS_TO_TICKS(120));
+  SPI_ReadComm(0xDA);
+  uint8_t ret = SPI_ReadData_Continue();
+  ESP_LOGI("lcd_Model","0x%02x",ret);
+  return ret;
 }

@@ -6,8 +6,6 @@
 #include "Arduino.h"
 #include "low_level_amoled.h"
 #include "board_config.h"
-// #include "FT3168.h"
-#include "read_lcd_id_bsp.h"
 #include "esp_lcd_panel_interface.h"
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_vendor.h"
