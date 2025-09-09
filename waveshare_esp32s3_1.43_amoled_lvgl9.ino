@@ -124,7 +124,7 @@ void setup()
     lv_timer_create(move_bubble, MOVE_BUBBLE_INTERVAL_MS, NULL); // ~20 Hz
 #else
     // If you want to use a UI created with Squarline Studio, call it here
-    // ex.: ui_init();
+    ui_init();
 #endif
 }
 
