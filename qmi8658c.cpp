@@ -1,6 +1,6 @@
-#include <stdio.h>
 #include "qmi8658c.h"
-#include "FT3168.h"
+#include "i2c.h"
+#include <stdio.h>
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "esp_log.h"

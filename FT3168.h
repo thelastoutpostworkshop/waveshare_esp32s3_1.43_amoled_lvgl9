@@ -2,7 +2,7 @@
 
 #ifndef FT3168_H
 #define FT3168_H
-#include "driver/i2c.h"
+#include "i2c.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,8 +11,7 @@ extern "C" {
 void Touch_Init(void);
 
 uint8_t getTouch(uint16_t *x,uint16_t *y);
-uint8_t I2C_writr_buff(uint8_t addr,uint8_t reg,uint8_t *buf,uint8_t len);
-uint8_t I2C_read_buff(uint8_t addr,uint8_t reg,uint8_t *buf,uint8_t len);
+
 
 #ifdef __cplusplus
 }
