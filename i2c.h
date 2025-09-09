@@ -1,3 +1,5 @@
+// I2C functions declarations used by the touch controller (FT3168) and 6-axis controller (QMI8658C)
+//
 #ifndef I2C_H
 #define I2C_H
 #include "board_config.h"

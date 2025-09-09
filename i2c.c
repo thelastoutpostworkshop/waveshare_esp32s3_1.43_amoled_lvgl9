@@ -1,3 +1,5 @@
+// I2C functions used by the touch controller (FT3168) and 6-axis controller (QMI8658C)
+//
 #include "i2c.h"
 
 uint8_t I2C_writr_buff(uint8_t addr,uint8_t reg,uint8_t *buf,uint8_t len)

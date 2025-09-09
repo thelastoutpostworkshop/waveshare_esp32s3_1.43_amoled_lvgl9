@@ -1,3 +1,5 @@
+// Capacitive Touch controller FT3168 functions
+//
 #include "board_config.h"
 #include "FT3168.h"
 #include "esp_err.h"

@@ -1,5 +1,5 @@
-// Capacitive Touch controller FT3168
-
+// Capacitive Touch controller FT3168 functions declaration
+//
 #ifndef FT3168_H
 #define FT3168_H
 #include "i2c.h"

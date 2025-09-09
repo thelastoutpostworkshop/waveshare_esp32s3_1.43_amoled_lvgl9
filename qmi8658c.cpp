@@ -1,3 +1,5 @@
+// QMI8658 sensor functions
+//
 #include "qmi8658c.h"
 #include "i2c.h"
 #include <stdio.h>

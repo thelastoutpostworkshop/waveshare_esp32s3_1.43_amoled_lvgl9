@@ -1,4 +1,4 @@
-// Main class for the display controller
+// Main class declaration for the display controller
 //
 #ifndef AMOLED_H
 #define AMOLED_H

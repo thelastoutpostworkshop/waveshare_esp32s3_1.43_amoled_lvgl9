@@ -1,3 +1,5 @@
+// QMI8658 sensor functions declaration
+//
 #ifndef QMI8658C_H
 #define QMI8658C_H
 #define QMI8658_USE_SPI

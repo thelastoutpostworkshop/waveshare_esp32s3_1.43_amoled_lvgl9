@@ -1,5 +1,5 @@
 // Waveshare ESP32-S3-Touch-AMOLED-1.43 Board configuration
-
+//
 #ifndef BOARD_CONFIG_H
 #define BOARD_CONFIG_H
 

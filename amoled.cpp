@@ -1,3 +1,5 @@
+// Main class for the display controller
+//
 #include "amoled.h"
 
 static const panel_lcd_init_cmd_t sh8601_lcd_init_cmds[] =
