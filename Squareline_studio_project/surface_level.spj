@@ -70,6 +70,7 @@
               },
               {
                 "nid": 90,
+                "flags": 1048576,
                 "strtype": "OBJECT/Flags",
                 "InheritedType": 1
               },
@@ -122,7 +123,7 @@
               {
                 "nid": 1020,
                 "strtype": "IMAGE/Asset",
-                "strval": "assets/surface_level.png",
+                "strval": "assets/surface level.png",
                 "InheritedType": 5
               },
               {
@@ -514,9 +515,20 @@
                     "strval": "DEFAULT",
                     "childs": [
                       {
+                        "nid": 10410,
+                        "strtype": "_style/Text_Color",
+                        "intarray": [
+                          15,
+                          253,
+                          99,
+                          255
+                        ],
+                        "InheritedType": 7
+                      },
+                      {
                         "nid": 10450,
                         "strtype": "_style/Text_Font",
-                        "strval": "montserrat_30",
+                        "strval": "montserrat_36",
                         "InheritedType": 3
                       }
                     ],
@@ -529,7 +541,8 @@
                 "InheritedType": 11
               }
             ],
-            "saved_objtypeKey": "LABEL"
+            "saved_objtypeKey": "LABEL",
+            "tree_closed": true
           },
           {
             "guid": "GUID3557619-854668S2954249",
@@ -696,6 +709,17 @@
                     "strtype": "_style/StyleState",
                     "strval": "DEFAULT",
                     "childs": [
+                      {
+                        "nid": 10410,
+                        "strtype": "_style/Text_Color",
+                        "intarray": [
+                          15,
+                          253,
+                          99,
+                          255
+                        ],
+                        "InheritedType": 7
+                      },
                       {
                         "nid": 10450,
                         "strtype": "_style/Text_Font",
@@ -881,6 +905,17 @@
                     "strval": "DEFAULT",
                     "childs": [
                       {
+                        "nid": 10410,
+                        "strtype": "_style/Text_Color",
+                        "intarray": [
+                          15,
+                          253,
+                          99,
+                          255
+                        ],
+                        "InheritedType": 7
+                      },
+                      {
                         "nid": 10450,
                         "strtype": "_style/Text_Font",
                         "strval": "montserrat_18",
@@ -1065,6 +1100,17 @@
                     "strval": "DEFAULT",
                     "childs": [
                       {
+                        "nid": 10410,
+                        "strtype": "_style/Text_Color",
+                        "intarray": [
+                          254,
+                          252,
+                          252,
+                          255
+                        ],
+                        "InheritedType": 7
+                      },
+                      {
                         "nid": 10450,
                         "strtype": "_style/Text_Font",
                         "strval": "montserrat_30",
@@ -1247,6 +1293,17 @@
                     "strtype": "_style/StyleState",
                     "strval": "DEFAULT",
                     "childs": [
+                      {
+                        "nid": 10410,
+                        "strtype": "_style/Text_Color",
+                        "intarray": [
+                          254,
+                          252,
+                          252,
+                          255
+                        ],
+                        "InheritedType": 7
+                      },
                       {
                         "nid": 10450,
                         "strtype": "_style/Text_Font",
@@ -2394,10 +2451,10 @@
     "theme_dark": false,
     "theme_color1": 5,
     "theme_color2": 0,
-    "uiExportFolderPath": "C:\\Users\\Charles\\Downloads\\UI",
-    "projectExportFolderPath": "C:\\Users\\Charles\\Downloads\\UI",
+    "uiExportFolderPath": "C:\\Users\\Charles\\Desktop\\ui_export",
+    "projectExportFolderPath": "C:\\Users\\Charles\\Desktop\\ui_export",
     "custom_variable_prefix": "uic",
-    "backup_cnt": 40,
+    "backup_cnt": 45,
     "autosave_cnt": 0,
     "group_color_cnt": 0,
     "lvgl_version": "9.2.2",
