@@ -40,7 +40,7 @@ extern "C" {
 extern lv_obj_t * ui____initial_actions0;
 
 // IMAGES AND IMAGE SETS
-LV_IMG_DECLARE(ui_img_surface_level_png);    // assets/surface_level.png
+LV_IMG_DECLARE(ui_img_surface_level_png);    // assets/surface level.png
 LV_IMG_DECLARE(ui_img_bubble_png);    // assets/bubble.png
 LV_IMG_DECLARE(ui_img_target_off_png);    // assets/target_off.png
 LV_IMG_DECLARE(ui_img_target_on_png);    // assets/target_on.png
