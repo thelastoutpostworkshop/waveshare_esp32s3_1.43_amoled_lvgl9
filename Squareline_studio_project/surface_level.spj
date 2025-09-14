@@ -16,7 +16,7 @@
               {
                 "nid": 10,
                 "strtype": "OBJECT/Name",
-                "strval": "Image3",
+                "strval": "quadrant",
                 "InheritedType": 10
               },
               {
@@ -172,7 +172,7 @@
               {
                 "nid": 10,
                 "strtype": "OBJECT/Name",
-                "strval": "Image2",
+                "strval": "bubble",
                 "childs": [
                   {
                     "nid": 15,
@@ -366,7 +366,7 @@
               {
                 "nid": 10,
                 "strtype": "OBJECT/Name",
-                "strval": "Label1",
+                "strval": "title",
                 "InheritedType": 10
               },
               {
@@ -553,7 +553,7 @@
               {
                 "nid": 10,
                 "strtype": "OBJECT/Name",
-                "strval": "Label2",
+                "strval": "labelX",
                 "childs": [
                   {
                     "nid": 15,
@@ -748,7 +748,7 @@
               {
                 "nid": 10,
                 "strtype": "OBJECT/Name",
-                "strval": "Label3",
+                "strval": "labelY",
                 "childs": [
                   {
                     "nid": 15,
@@ -943,7 +943,7 @@
               {
                 "nid": 10,
                 "strtype": "OBJECT/Name",
-                "strval": "Label4",
+                "strval": "degreesX",
                 "childs": [
                   {
                     "nid": 15,
@@ -1137,7 +1137,7 @@
               {
                 "nid": 10,
                 "strtype": "OBJECT/Name",
-                "strval": "Label5",
+                "strval": "degreesY",
                 "childs": [
                   {
                     "nid": 15,
@@ -1331,7 +1331,7 @@
               {
                 "nid": 10,
                 "strtype": "OBJECT/Name",
-                "strval": "Image4",
+                "strval": "targetOFF",
                 "childs": [
                   {
                     "nid": 15,
@@ -1525,7 +1525,7 @@
               {
                 "nid": 10,
                 "strtype": "OBJECT/Name",
-                "strval": "Image5",
+                "strval": "targetON",
                 "childs": [
                   {
                     "nid": 15,
@@ -1919,7 +1919,7 @@
               {
                 "nid": 10,
                 "strtype": "OBJECT/Name",
-                "strval": "Image6",
+                "strval": "makersLogo",
                 "InheritedType": 10
               },
               {
@@ -2075,7 +2075,7 @@
               {
                 "nid": 10,
                 "strtype": "OBJECT/Name",
-                "strval": "Label6",
+                "strval": "subTitle",
                 "InheritedType": 10
               },
               {
@@ -2454,7 +2454,7 @@
     "uiExportFolderPath": "C:\\Users\\Charles\\Desktop\\ui_export",
     "projectExportFolderPath": "C:\\Users\\Charles\\Desktop\\ui_export",
     "custom_variable_prefix": "uic",
-    "backup_cnt": 45,
+    "backup_cnt": 47,
     "autosave_cnt": 0,
     "group_color_cnt": 0,
     "lvgl_version": "9.2.2",
