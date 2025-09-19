@@ -1,5 +1,5 @@
 // Waveshare ESP32-S3-Touch-AMOLED-1.43 Surface Level (LVGL9)
-// Tutorial :
+// Tutorial : https://youtu.be/HT6sG39-vrk
 // Use board "Waveshare ESP32-S3-Touch-AMOLED-1.43" (last tested on v3.3.0)
 
 // The next line instruct LVGL to use lv_conf.h included in this project
