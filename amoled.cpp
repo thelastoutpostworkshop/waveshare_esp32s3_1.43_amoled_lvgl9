@@ -25,7 +25,7 @@ static const panel_lcd_init_cmd_t co5300_lcd_init_cmds[] =
         {0x51, (uint8_t[]){0x00}, 1, 1},
         {0x29, (uint8_t[]){0x00}, 0, 10},
         {0x51, (uint8_t[]){0xFF}, 1, 0},
-        //{0x36, (uint8_t []){0x60}, 1, 0},
+        //{0x36, (uint8_t []){0x60}, 1, 0}, // Change screen orientation, touch reading must be adjusted
 };
 
 // Convert byte to big endian
