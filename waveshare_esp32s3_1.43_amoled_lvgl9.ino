@@ -6,9 +6,6 @@
 // Keep it this way, everything is configured correctly
 #define LV_CONF_INCLUDE_SIMPLE
 
-// Comment the next line if you want to use your own design (ex. from Squareline studio) and disable the Surface Level Example 
-#define USE_BUILT_IN_SURFACE_LEVEL_EXAMPLE
-
 #include <lvgl.h> // Install "lvgl" with the Library Manager (last tested on v9.2.2)
 #include "amoled.h"
 #include "FT3168.h"   // Capacitive Touch functions
